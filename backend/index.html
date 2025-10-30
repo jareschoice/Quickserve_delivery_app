@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to QuickServe 🚀</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #008037, #ff8800, #d62828);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            max-width: 700px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: gold;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: #f1f1f1;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #f9f9f9;
+        }
+
+        .highlight {
+            color: #ffcd00;
+            font-weight: 600;
+        }
+
+        .status {
+            background: #00b894;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            color: #fff;
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .cta-btn {
+            background: gold;
+            color: #111;
+            padding: 14px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            background: #fff;
+            transform: scale(1.05);
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container,
+        .status,
+        .cta-btn {
+            animation: fadeIn 1.5s ease forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🍴 Welcome to <span class="highlight">QuickServe</span></h1>
+        <h2>Smart Delivery. Fast Experience. Nigerian Flavor 🇳🇬</h2>
+
+        <p>
+            <strong>QuickServe</strong> is your all-in-one delivery companion —
+            connecting you instantly to your favorite restaurants, local shops, pharmacies,
+            and grocery stores across Nigeria. Just like <span class="highlight">Chowdeck</span> and
+            <span class="highlight">Glovo</span>,
+            we’re building a smoother, faster, more rewarding way to order and deliver — powered by technology that
+            works flawlessly.
+        </p>
+
+        <p>
+            Our <span class="highlight">backend infrastructure</span> is now <strong>fully integrated and live</strong>
+            💚
+            with <strong>MongoDB Atlas</strong>, <strong>Node.js</strong>, and <strong>Paystack</strong> —
+            ensuring speed, reliability, and real-time delivery tracking.
+        </p>
+
+        <div class="status">✅ Backend Connected — QuickServe API Running Smoothly</div>
+
+        <a href="https://getquickserves.com/health" class="cta-btn">View API Health Status</a>
+
+        <footer>© 2025 QuickServe. Built with ❤️ by OLOWOJARE.</footer>
+    </div>
+</body>
+
+</html>

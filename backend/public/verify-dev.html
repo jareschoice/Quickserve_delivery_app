@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QuickServe Dev - Verify Email</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial; max-width: 400px; margin: 50px auto; padding: 20px; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; }
+        button { background: #16a34a; color: white; border: none; cursor: pointer; }
+        .result { margin: 20px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h2>🚀 QuickServe Development</h2>
+    <h3>Email Verification</h3>
+    
+    <input type="email" id="email" placeholder="Enter your email address" />
+    <button onclick="verifyEmail()">Verify Email</button>
+    
+    <div id="result"></div>
+    
+    <hr>
+    <h3>Test Accounts</h3>
+    <p><strong>Pre-verified test account:</strong><br>
+    Email: test@test.com<br>
+    Password: password123</p>
+
+    <script>
+        async function verifyEmail() {
+            const email = document.getElementById('email').value;
+            const result = document.getElementById('result');
+            
+            if (!email) {
+                result.innerHTML = '<div class="error">Please enter an email address</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/auth/dev-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `<div class="success">✅ ${data.message}<br><br>You can now login with this email!</div>`;
+                } else {
+                    result.innerHTML = `<div class="error">❌ ${data.error}</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Network error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
