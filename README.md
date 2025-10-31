@@ -27,6 +27,9 @@ Flutter
 - Flutter stable channel
 - From `frontend/`: `flutter pub get`; `flutter run` (pick flavor/target as needed)
 
+Connectivity guides
+- See `docs/lan-connectivity.md` to make the phone reach your PC backend over LAN.
+
 ## CI
 
 GitHub Actions run on pushes and PRs:
