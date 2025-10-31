@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions or general help
+    url: https://github.com/jareschoice/Quickserve_delivery_app/issues/new
+    about: Please open an Issue with label `question` for help.
