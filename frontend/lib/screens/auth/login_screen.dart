@@ -35,8 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _appLabel = saved == UserRole.vendor
             ? 'QuickVendor'
             : saved == UserRole.rider
-                ? 'QuickRide'
-                : 'QuickServe';
+            ? 'QuickRide'
+            : 'QuickServe';
       });
     }
   }

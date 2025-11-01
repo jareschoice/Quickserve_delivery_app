@@ -35,8 +35,8 @@ class _SignupScreenState extends State<SignupScreen> {
         _appLabel = savedRole == 'vendor'
             ? 'QuickVendor'
             : savedRole == 'rider'
-                ? 'QuickRide'
-                : 'QuickServe';
+            ? 'QuickRide'
+            : 'QuickServe';
       });
     }
   }

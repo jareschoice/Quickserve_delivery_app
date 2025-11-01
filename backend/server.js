@@ -2,13 +2,14 @@
 // 🌍 Load environment variables
 // ===============================
 import 'dotenv/config';
+import { networkInterfaces } from 'os';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import './src/config/db.js'; // Mongo connection
+import { connectToMongoDB } from './src/config/db.js';
 
 import { createServer } from 'http';
 import { Server as IOServer } from 'socket.io';
@@ -153,15 +154,21 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 // Only listen if this file is run directly
 if (process.env.NODE_ENV !== 'test') {
-  httpServer.listen(PORT, HOST, () => {
-    const localIp = getLocalIp();
-    console.log(`🚀 QuickServe API running on http://${HOST}:${PORT}`);
-    if (localIp) {
-      console.log(
-        `📱 Access from phone: http://${localIp}:${PORT}`
-      );
-    }
-    console.log(`🧭 Waiting for connections...`);
+  // Connect to MongoDB before starting the server
+  connectToMongoDB().then(() => {
+    httpServer.listen(PORT, HOST, () => {
+      const localIp = getLocalIp();
+      console.log(`🚀 QuickServe API running on http://${HOST}:${PORT}`);
+      if (localIp) {
+        console.log(
+          `📱 Access from phone: http://${localIp}:${PORT}`
+        );
+      }
+      console.log(`🧭 Waiting for connections...`);
+    });
+  }).catch((err) => {
+    console.error('❌ Failed to start server:', err.message);
+    process.exit(1);
   });
 }
 

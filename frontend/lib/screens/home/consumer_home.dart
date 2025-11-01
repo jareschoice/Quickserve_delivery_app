@@ -7,7 +7,6 @@ import '../categories/pharmacy_page.dart';
 import '../categories/shops_page.dart';
 import '../orders/order_page.dart';
 import '../location/location_selection_page.dart';
-import '../vendor/vendor_detail_page.dart';
 
 class ConsumerHome extends StatefulWidget {
   const ConsumerHome({super.key});

@@ -45,7 +45,7 @@ class _WalletPageState extends State<WalletPage> {
 
   Future<void> _withdraw() async {
     try {
-      await _api.post('/api/vendors/wallet/withdraw', { 'amount': 1000 });
+      await _api.post('/api/vendors/wallet/withdraw', {'amount': 1000});
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -60,7 +60,7 @@ class _WalletPageState extends State<WalletPage> {
 
   @override
   Widget build(BuildContext context) {
-  final eligible = _next == null ? false : DateTime.now().isAfter(_next!);
+    final eligible = _next == null ? false : DateTime.now().isAfter(_next!);
     return Scaffold(
       appBar: AppBar(title: const Text('Wallet')),
       body: _loading
