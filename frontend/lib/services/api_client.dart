@@ -67,7 +67,7 @@ class ApiClient {
     Duration timeout = const Duration(seconds: 10),
   }) async {
     if (useMock) return _mockPost(path, body);
-  final uri = await _buildUri(path);
+    final uri = await _buildUri(path);
     final headers = await _headers(token);
     final res = await http
         .post(uri, headers: headers, body: jsonEncode(body))

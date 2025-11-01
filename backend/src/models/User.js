@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 const ProfileSchema = new mongoose.Schema({
   // flexible per role
@@ -58,6 +59,19 @@ UserSchema.pre('save', async function(next) {
   this.password = await bcrypt.hash(this.password, salt)
   next()
 })
+
+UserSchema.methods.createVerifyToken = function() {
+  const verifyToken = crypto.randomBytes(32).toString('hex');
+
+  this.verifyToken = crypto
+    .createHash('sha256')
+    .update(verifyToken)
+    .digest('hex');
+
+  this.verifyTokenExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return verifyToken;
+};
 
 UserSchema.methods.comparePassword = async function(candidate) {
   return bcrypt.compare(candidate, this.password)

@@ -63,6 +63,10 @@ app.use(express.static('public'));
 // ===============================
 // 🚀 Root + Health Check
 // ===============================
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.get('/', (req, res) => {
   const mongoStatus =
     mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
@@ -142,13 +146,37 @@ io.on('connection', (socket) => {
 });
 
 // ===============================
-// 🚀 Start Server
+// 🚀 Server Start
 // ===============================
 const PORT = process.env.PORT || 5555;
-const LOCAL_IP = process.env.LOCAL_IP || '192.168.174.104';
+const HOST = process.env.HOST || '0.0.0.0';
 
-httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 QuickServe API running on http://0.0.0.0:${PORT}`);
-  console.log(`📱 Access from phone: http://${LOCAL_IP}:${PORT}`);
-  console.log('🧭 Waiting for connections...');
-});
+// Only listen if this file is run directly
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(PORT, HOST, () => {
+    const localIp = getLocalIp();
+    console.log(`🚀 QuickServe API running on http://${HOST}:${PORT}`);
+    if (localIp) {
+      console.log(
+        `📱 Access from phone: http://${localIp}:${PORT}`
+      );
+    }
+    console.log(`🧭 Waiting for connections...`);
+  });
+}
+
+function getLocalIp() {
+  const nets = networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return null;
+}
+
+// Export for testing
+export { app, httpServer };
