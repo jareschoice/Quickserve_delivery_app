@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import User from '../models/User.js'
 import { signJWT } from '../utils/jwt.js'
-import { sendEmail } from '../utils/emailClient.js' // you already have this
+import { sendEmail } from '../utils/email.js' // you already have this
                                                        // (we’ll reuse it)
 
 const minutesFromNow = (m) => new Date(Date.now() + m * 60 * 1000)
