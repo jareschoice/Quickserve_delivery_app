@@ -6,48 +6,15 @@ import User from "../models/User.js";
 import { adjustUserWallet, adjustVendorWallet } from "../utils/wallet.js";
 import { signQrToken, verifyQrToken, generateQrPngBase64 } from "../utils/qr.js";
 import { authRequired } from "../middleware/auth.js";
+import { blockUnpaidOrderCreation, requirePaidOrder } from "../middleware/paymentVerification.js";
 import { calculateDeliveryFee, quickserveFee } from "../utils/fare.js";
 import { notifyAdmin } from "../utils/notify.js";
 
 const router = express.Router();
 
-// Create order (customer)
-router.post("/", authRequired("customer"), async (req, res) => {
-  try {
-    const { vendorId, items, distanceKm: distanceKmClient = 0, deliveryAddress, origin, destination } = req.body;
-    const vendor = await Vendor.findById(vendorId);
-    if (!vendor) return res.status(400).json({ error: "Vendor not found" });
-
-    const subtotal = items.reduce((sum, it) => sum + Number(it.price) * Number(it.qty), 0);
-    let distanceKm = Number(distanceKmClient) || 0;
-    try {
-      if (origin && destination) {
-        const mod = await import('../utils/fare.js');
-        distanceKm = await mod.getDistanceKm(origin, destination);
-      }
-    } catch {}
-    const deliveryFee = calculateDeliveryFee(distanceKm);
-    const qsFee = quickserveFee();
-    const total = subtotal + deliveryFee + qsFee;
-
-    const order = await Order.create({
-      consumerId: req.user.id,
-      vendorId: vendor._id,
-      items,
-      subtotal,
-      deliveryFee,
-      platformFee: qsFee,
-      total,
-      distanceKm,
-      deliveryAddress,
-      status: "placed"
-    });
-
-    res.json({ order });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// ⚠️ BLOCK DIRECT ORDER CREATION - Orders must go through payment flow
+// Use POST /api/payments/init-order-payment instead
+router.post("/", authRequired("customer"), blockUnpaidOrderCreation);
 
 // Vendor accept/reject
 router.post("/:id/accept", authRequired("vendor"), async (req, res) => {

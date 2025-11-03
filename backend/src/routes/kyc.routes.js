@@ -1,25 +1,31 @@
-import express from 'express'
-import { authRequired } from '../middleware/auth.js'
-import User from '../models/User.js'
+// ===============================
+// FILE: backend/src/routes/kyc.routes.js
+// ===============================
+import express from "express";
+import {
+  submitKyc,
+  getKycStatus,
+  verifyVendorKYC, // ✅ Added this
+} from "../controllers/kycController.js";
+import { authRequired } from "../middleware/auth.js"; // ✅ Keep only one import
 
-const router = express.Router()
+const router = express.Router();
 
-// Submit KYC (vendor or rider)
-router.post('/submit', authRequired(), async (req, res) => {
-  const { idUrl, licenseUrl, govIdNumber, extra } = req.body
-  const u = await User.findById(req.user.id)
-  if (!u) return res.status(404).json({ error: 'User not found' })
-  u.kycStatus = 'pending'
-  u.kycMeta = { ...(u.kycMeta||{}), idUrl, licenseUrl, govIdNumber, extra }
-  await u.save()
-  res.json({ user: u })
-})
+// ===============================
+// ✳️ KYC SUBMISSION (Vendor or Rider)
+// ===============================
+router.post("/submit", authRequired("vendor", "rider"), submitKyc);
 
-// Get my KYC state
-router.get('/me', authRequired(), async (req, res) => {
-  const u = await User.findById(req.user.id)
-  if (!u) return res.status(404).json({ error: 'User not found' })
-  res.json({ kycStatus: u.kycStatus, kycMeta: u.kycMeta, kycReviewedAt: u.kycReviewedAt })
-})
+// ===============================
+// ✳️ FETCH KYC STATUS
+// ===============================
+router.get("/status", authRequired(), getKycStatus);
 
-export default router
+// ===============================
+// ✳️ ADMIN VERIFY VENDOR KYC
+// ===============================
+// 📍 ADD THIS AT THE BOTTOM OF THE FILE
+router.post("/verify", authRequired("admin"), verifyVendorKYC);
+
+// ✅ Always export the router at the end
+export default router;

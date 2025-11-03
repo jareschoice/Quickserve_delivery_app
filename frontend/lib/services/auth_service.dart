@@ -14,9 +14,14 @@ class AuthService {
     bool useOTP = false, // Default to email verification
   }) async {
     try {
-      final roleStr = (role == UserRole.consumer)
+      // Map UserRole to API endpoint string
+      final roleStr = role == UserRole.consumer
           ? 'customer'
-          : roleToString(role);
+          : role == UserRole.vendor
+              ? 'vendor'
+              : role == UserRole.rider
+                  ? 'rider'
+                  : 'customer'; // fallback
 
       final data = await _api.postJson('/auth/register/$roleStr', {
         'name': fullName,

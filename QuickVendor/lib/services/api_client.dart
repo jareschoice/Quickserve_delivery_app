@@ -22,16 +22,18 @@ class ApiClient {
     final res = await _http.post(Uri.parse('$baseUrl$path'),
         headers: _headers, body: jsonEncode(body));
     final data = jsonDecode(res.body);
-    if (res.statusCode >= 200 && res.statusCode < 300)
+    if (res.statusCode >= 200 && res.statusCode < 300) {
       return data as Map<String, dynamic>;
+    }
     throw Exception(data['error'] ?? 'Request failed');
   }
 
   Future<List<dynamic>> getList(String path) async {
     final res = await _http.get(Uri.parse('$baseUrl$path'), headers: _headers);
     final data = jsonDecode(res.body);
-    if (res.statusCode >= 200 && res.statusCode < 300)
+    if (res.statusCode >= 200 && res.statusCode < 300) {
       return data as List<dynamic>;
+    }
     throw Exception(
         (data is Map) ? data['error'] ?? 'Request failed' : 'Request failed');
   }
@@ -39,8 +41,9 @@ class ApiClient {
   Future<Map<String, dynamic>> getJson(String path) async {
     final res = await _http.get(Uri.parse('$baseUrl$path'), headers: _headers);
     final data = jsonDecode(res.body);
-    if (res.statusCode >= 200 && res.statusCode < 300)
+    if (res.statusCode >= 200 && res.statusCode < 300) {
       return data as Map<String, dynamic>;
+    }
     throw Exception(data['error'] ?? 'Request failed');
   }
 
@@ -56,8 +59,9 @@ class ApiClient {
     final streamed = await req.send();
     final res = await http.Response.fromStream(streamed);
     final data = jsonDecode(res.body);
-    if (res.statusCode >= 200 && res.statusCode < 300)
+    if (res.statusCode >= 200 && res.statusCode < 300) {
       return data as Map<String, dynamic>;
+    }
     throw Exception(data['error'] ?? 'Upload failed');
   }
 }

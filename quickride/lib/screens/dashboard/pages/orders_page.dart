@@ -133,7 +133,12 @@ class _OrdersPageState extends State<OrdersPage> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                for (final opt in const ['big','small','ordinary','customized'])
+                for (final opt in const [
+                  'big',
+                  'small',
+                  'ordinary',
+                  'customized'
+                ])
                   RadioListTile<String>(
                     title: Text(opt.toUpperCase()),
                     value: opt,
@@ -144,28 +149,33 @@ class _OrdersPageState extends State<OrdersPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () { Navigator.pop(context); },
+                onPressed: () {
+                  Navigator.pop(context);
+                },
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: choice == null ? null : () async {
-                  try {
-                    await _api.post('/api/orders/$id/pack', {
-                      'packagingChoice': choice,
-                    });
-                    if (!mounted) return;
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Order packed, waiting pickup')),
-                    );
-                    _load();
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Pack failed: $e')),
-                    );
-                  }
-                },
+                onPressed: choice == null
+                    ? null
+                    : () async {
+                        try {
+                          await _api.post('/api/orders/$id/pack', {
+                            'packagingChoice': choice,
+                          });
+                          if (!mounted) return;
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Order packed, waiting pickup')),
+                          );
+                          _load();
+                        } catch (e) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Pack failed: $e')),
+                          );
+                        }
+                      },
                 child: const Text('Confirm'),
               ),
             ],
@@ -182,49 +192,50 @@ class _OrdersPageState extends State<OrdersPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _orders.isEmpty
-          ? const Center(child: Text('No orders yet'))
-          : ListView.separated(
-              itemCount: _orders.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final o = _orders[i] as Map<String, dynamic>;
-                final id = o['_id']?.toString() ?? '';
-                final start = id.length > 6 ? id.length - 6 : 0;
-                return ListTile(
-                  title: Text('Order ${id.substring(start)}'),
-                  subtitle: Text(
-                    'Status: ${o['status']} • Items: ${(o['items'] as List).length} • Total ₦${o['total']}',
-                  ),
-                  trailing: Wrap(
-                    spacing: 8,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            await _api.post('/api/orders/$id/accept', {});
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Order accepted')),
-                            );
-                            _load();
-                          } catch (e) {
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Accept failed: $e')),
-                            );
-                          }
-                        },
-                        child: const Text('Accept'),
+              ? const Center(child: Text('No orders yet'))
+              : ListView.separated(
+                  itemCount: _orders.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, i) {
+                    final o = _orders[i] as Map<String, dynamic>;
+                    final id = o['_id']?.toString() ?? '';
+                    final start = id.length > 6 ? id.length - 6 : 0;
+                    return ListTile(
+                      title: Text('Order ${id.substring(start)}'),
+                      subtitle: Text(
+                        'Status: ${o['status']} • Items: ${(o['items'] as List).length} • Total ₦${o['total']}',
                       ),
-                      ElevatedButton(
-                        onPressed: () => _pack(id),
-                        child: const Text('Pack'),
+                      trailing: Wrap(
+                        spacing: 8,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await _api.post('/api/orders/$id/accept', {});
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Order accepted')),
+                                );
+                                _load();
+                              } catch (e) {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Accept failed: $e')),
+                                );
+                              }
+                            },
+                            child: const Text('Accept'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => _pack(id),
+                            child: const Text('Pack'),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
     );
   }
 }

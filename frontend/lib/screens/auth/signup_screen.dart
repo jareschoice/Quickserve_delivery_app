@@ -35,8 +35,8 @@ class _SignupScreenState extends State<SignupScreen> {
         _appLabel = savedRole == 'vendor'
             ? 'QuickVendor'
             : savedRole == 'rider'
-                ? 'QuickRide'
-                : 'QuickServe';
+            ? 'QuickRide'
+            : 'QuickServe';
       });
     }
   }
@@ -77,6 +77,17 @@ class _SignupScreenState extends State<SignupScreen> {
     } else {
       showSnack(context, 'Sign up failed. Please try again.', error: true);
     }
+  }
+
+  // Helper method to show snackbar messages
+  void showSnack(BuildContext context, String message, {bool error = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? Colors.red : Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   @override

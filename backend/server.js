@@ -2,24 +2,25 @@
 // 🌍 Load environment variables
 // ===============================
 import 'dotenv/config';
+import { networkInterfaces } from 'os';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import './src/config/db.js'; // Mongo connection
+import { connectToMongoDB } from './src/config/db.js';
 
 import { createServer } from 'http';
 import { Server as IOServer } from 'socket.io';
 
 // ===============================
-// 🧭 Route Imports
+// 🧭 Route Imports (Legacy/V1)
 // ===============================
 import authRoutes from './src/routes/authRoutes.js';
 import vendorRoutes from './src/routes/vendorRoutes.js';
 import riderRoutes from './src/routes/riderRoutes.js';
-import orderRoutes from './src/routes/orderRoutes.js';
+// import orderRoutes from './src/routes/orderRoutes.js'; // ❌ File doesn't exist - using V2 instead
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import emailRoutes from './src/routes/emailRoutes.js';
 
@@ -63,6 +64,10 @@ app.use(express.static('public'));
 // ===============================
 // 🚀 Root + Health Check
 // ===============================
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.get('/', (req, res) => {
   const mongoStatus =
     mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
@@ -76,12 +81,12 @@ app.get('/', (req, res) => {
 });
 
 // ===============================
-// 📦 API Routes
+// 📦 API Routes (Legacy/V1)
 // ===============================
 app.use('/auth', authRoutes);
 app.use('/vendors', vendorRoutes);
 app.use('/riders', riderRoutes);
-app.use('/orders', orderRoutes);
+// app.use('/orders', orderRoutes); // ❌ Commented - file doesn't exist, use /api/orders instead
 app.use('/payments', paymentRoutes);
 app.use('/api/email', emailRoutes);
 
@@ -142,13 +147,43 @@ io.on('connection', (socket) => {
 });
 
 // ===============================
-// 🚀 Start Server
+// 🚀 Server Start
 // ===============================
 const PORT = process.env.PORT || 5555;
-const LOCAL_IP = process.env.LOCAL_IP || '192.168.174.104';
+const HOST = process.env.HOST || '0.0.0.0';
 
-httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 QuickServe API running on http://0.0.0.0:${PORT}`);
-  console.log(`📱 Access from phone: http://${LOCAL_IP}:${PORT}`);
-  console.log('🧭 Waiting for connections...');
-});
+// Only listen if this file is run directly
+if (process.env.NODE_ENV !== 'test') {
+  // Connect to MongoDB before starting the server
+  connectToMongoDB().then(() => {
+    httpServer.listen(PORT, HOST, () => {
+      const localIp = getLocalIp();
+      console.log(`🚀 QuickServe API running on http://${HOST}:${PORT}`);
+      if (localIp) {
+        console.log(
+          `📱 Access from phone: http://${localIp}:${PORT}`
+        );
+      }
+      console.log(`🧭 Waiting for connections...`);
+    });
+  }).catch((err) => {
+    console.error('❌ Failed to start server:', err.message);
+    process.exit(1);
+  });
+}
+
+function getLocalIp() {
+  const nets = networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return null;
+}
+
+// Export for testing
+export { app, httpServer };

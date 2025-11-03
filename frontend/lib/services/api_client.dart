@@ -3,17 +3,16 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Base URL for the backend API.
 /// Override at run-time with:
 ///   --dart-define=BACKEND_BASE_URL=http://192.168.x.x:5555
-/// Falls back to production domain when not provided.
+/// Falls back to local network when not provided.
 const String kApiBase = String.fromEnvironment(
   'BACKEND_BASE_URL',
-  defaultValue: 'https://getquickserves.com',
+  defaultValue: 'http://192.168.100.104:5555', // Your LAN IP
 );
-bool get useMock => kApiBase.trim().isEmpty;
+bool get useMock => false; // Disable mock mode
 
 class ApiClient {
   final String? baseUrl; // preferred base if provided explicitly
@@ -67,7 +66,7 @@ class ApiClient {
     Duration timeout = const Duration(seconds: 10),
   }) async {
     if (useMock) return _mockPost(path, body);
-  final uri = await _buildUri(path);
+    final uri = await _buildUri(path);
     final headers = await _headers(token);
     final res = await http
         .post(uri, headers: headers, body: jsonEncode(body))
@@ -100,6 +99,9 @@ class ApiClient {
   Future<Map<String, dynamic>> getVendors() => getJson('/api/vendors');
   Future<Map<String, dynamic>> getVendor(String id) =>
       getJson('/api/vendors/$id');
+  
+  // Get current user profile
+  Future<Map<String, dynamic>> me() => getJson('/auth/me');
 
   // -------------------------
   // Mock/demo responses when no backend present

@@ -56,24 +56,123 @@ connectDB().then(() => {
     });
   });
 
-  // Simple scheduler to check active subscriptions once per minute and emit notifications
+  // ✅ Enhanced scheduler: Check active subscriptions every minute for breakfast, lunch, dinner deliveries
   setInterval(async () => {
     try {
       const now = new Date()
+      const currentHour = now.getHours()
+      const currentMinute = now.getMinutes()
+      const todayDate = now.toDateString() // To avoid duplicate notifications on same day
+      
       const Subscription = (await import('./models/Subscription.js')).default
-      const subs = await Subscription.find({ status: 'active' })
-      for (const s of subs) {
-        // if within the minute of scheduled time, notify user
-        const [hh, mm] = (s.deliveryTimeDaily||'12:00').split(':').map(n=>parseInt(n,10))
-        const shouldNotify = now.getHours() === hh && now.getMinutes() === mm
-        if (shouldNotify) {
-          io.to(String(s.user)).emit('subscription:delivery', { subscriptionId: s._id, plan: s.plan })
+      const User = (await import('./models/User.js')).default
+      
+      const activeSubs = await Subscription.find({ status: 'active' }).populate('user')
+      
+      // Get all admin users for notifications
+      const admins = await User.find({ role: 'admin' })
+      
+      for (const sub of activeSubs) {
+        const { mealSchedule, lastDeliveryDate } = sub
+        
+        // Skip if already notified today
+        if (lastDeliveryDate && new Date(lastDeliveryDate).toDateString() === todayDate) {
+          continue
+        }
+        
+        // Check breakfast schedule
+        if (mealSchedule?.breakfast?.enabled) {
+          const [hh, mm] = mealSchedule.breakfast.time.split(':').map(n => parseInt(n, 10))
+          if (currentHour === hh && currentMinute === mm) {
+            // Notify consumer
+            io.to(String(sub.user._id)).emit('subscription:delivery', { 
+              subscriptionId: sub._id, 
+              plan: sub.plan,
+              mealType: 'breakfast',
+              scheduledTime: mealSchedule.breakfast.time,
+              deliveryAddress: sub.deliveryAddress
+            })
+            
+            // ✅ Notify ALL admins
+            admins.forEach(admin => {
+              io.to(String(admin._id)).emit('admin:subscription-delivery', {
+                subscriptionId: sub._id,
+                customer: sub.user.name,
+                customerPhone: sub.user.phone,
+                plan: sub.plan,
+                mealType: 'breakfast',
+                scheduledTime: mealSchedule.breakfast.time,
+                deliveryAddress: sub.deliveryAddress,
+                timestamp: new Date()
+              })
+            })
+            
+            console.log(`🍳 [SUBSCRIPTION] Breakfast delivery scheduled for ${sub.user.name} (${sub.plan})`)
+          }
+        }
+        
+        // Check lunch schedule
+        if (mealSchedule?.lunch?.enabled) {
+          const [hh, mm] = mealSchedule.lunch.time.split(':').map(n => parseInt(n, 10))
+          if (currentHour === hh && currentMinute === mm) {
+            io.to(String(sub.user._id)).emit('subscription:delivery', { 
+              subscriptionId: sub._id, 
+              plan: sub.plan,
+              mealType: 'lunch',
+              scheduledTime: mealSchedule.lunch.time,
+              deliveryAddress: sub.deliveryAddress
+            })
+            
+            admins.forEach(admin => {
+              io.to(String(admin._id)).emit('admin:subscription-delivery', {
+                subscriptionId: sub._id,
+                customer: sub.user.name,
+                customerPhone: sub.user.phone,
+                plan: sub.plan,
+                mealType: 'lunch',
+                scheduledTime: mealSchedule.lunch.time,
+                deliveryAddress: sub.deliveryAddress,
+                timestamp: new Date()
+              })
+            })
+            
+            console.log(`🍱 [SUBSCRIPTION] Lunch delivery scheduled for ${sub.user.name} (${sub.plan})`)
+          }
+        }
+        
+        // Check dinner schedule
+        if (mealSchedule?.dinner?.enabled) {
+          const [hh, mm] = mealSchedule.dinner.time.split(':').map(n => parseInt(n, 10))
+          if (currentHour === hh && currentMinute === mm) {
+            io.to(String(sub.user._id)).emit('subscription:delivery', { 
+              subscriptionId: sub._id, 
+              plan: sub.plan,
+              mealType: 'dinner',
+              scheduledTime: mealSchedule.dinner.time,
+              deliveryAddress: sub.deliveryAddress
+            })
+            
+            admins.forEach(admin => {
+              io.to(String(admin._id)).emit('admin:subscription-delivery', {
+                subscriptionId: sub._id,
+                customer: sub.user.name,
+                customerPhone: sub.user.phone,
+                plan: sub.plan,
+                mealType: 'dinner',
+                scheduledTime: mealSchedule.dinner.time,
+                deliveryAddress: sub.deliveryAddress,
+                timestamp: new Date()
+              })
+            })
+            
+            console.log(`🍽️ [SUBSCRIPTION] Dinner delivery scheduled for ${sub.user.name} (${sub.plan})`)
+          }
         }
       }
     } catch (e) {
-      console.warn('Subscription scheduler error:', e.message)
+      console.warn('⚠️ Subscription scheduler error:', e.message)
     }
-  }, 60 * 1000)
+  }, 60 * 1000) // Run every minute
 
   server.listen(PORT, () => {
     console.log(`🚀 QuickServe API running on http://localhost:${PORT}`);

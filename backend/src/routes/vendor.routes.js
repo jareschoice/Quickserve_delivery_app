@@ -8,7 +8,7 @@ const router = express.Router();
 // Create/Update vendor profile (minimal fields per schema)
 router.post("/profile", authRequired("vendor"), async (req, res) => {
   try {
-    const user = req.user.id;
+    const user = req.user._id || req.user.id; // Support both _id and id
     const { storeName } = req.body;
     let v = await Vendor.findOne({ user });
     if (!v) {
@@ -25,7 +25,7 @@ router.post("/profile", authRequired("vendor"), async (req, res) => {
 
 // Get my vendor profile
 router.get("/me", authRequired("vendor"), async (req, res) => {
-  const v = await Vendor.findOne({ user: req.user.id });
+  const v = await Vendor.findOne({ user: req.user._id || req.user.id });
   res.json({ vendor: v });
 });
 

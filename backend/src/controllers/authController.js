@@ -209,7 +209,9 @@ export const verifyOTP = async (req, res) => {
   }
 }
 
-// ---------- LOGIN ----------
+// ===============================
+// LOGIN (UPDATED VERSION)
+// ===============================
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -221,20 +223,39 @@ export const login = async (req, res) => {
     if (!user.isVerified) return res.status(403).json({ error: 'Email not verified' })
 
     const token = signJWT({ id: user._id, role: user.role })
+
+    // ✅ Added redirect info for frontend role-based navigation
+let redirectTo = '/customer/home'; // default
+
+if (user.role === 'vendor') {
+  redirectTo = '/vendor/dashboard';
+} else if (user.role === 'rider') {
+  redirectTo = '/rider/dashboard';
+} else if (user.role === 'customer') {
+  redirectTo = '/customer/home';
+} else if (user.role === 'admin') {
+  redirectTo = '/admin/panel';
+}
+
+    // ✅ Send clearer success response
     return res.json({
+      success: true,
+      message: `Welcome back, ${user.name}!`,
       token,
       user: {
         id: user._id,
         role: user.role,
         name: user.name,
         email: user.email
-      }
+      },
+      redirectTo
     })
   } catch (e) {
     console.error(e)
     return res.status(500).json({ error: 'Login failed' })
   }
 }
+
 
 // ---------- ME ----------
 export const me = async (req, res) => {

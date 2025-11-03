@@ -1,6 +1,6 @@
 // lib/screens/cart/checkout_screen.dart
 import 'package:flutter/material.dart';
-import '../../providers/cart_provider.dart';
+import '../../providers/cart_providers.dart'; // Fixed: was cart_provider.dart
 import '../../widgets/primary_button.dart';
 import '../../widgets/empty_state.dart';
 
@@ -20,7 +20,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   int serviceCharge = 50;
 
-  int get subtotal => demoItems.fold(0, (s, i) => s + i.total);
+  int get subtotal => demoItems.fold<int>(0, (s, i) => s + i.total);
   int get total => subtotal + serviceCharge;
 
   void _payWithPaystack() {
@@ -56,7 +56,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     if (demoItems.isEmpty) {
-      return const Scaffold(appBar: AppBar(title: Text('Checkout')), body: EmptyState(message: 'Your cart is empty'));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Checkout')), 
+        body: const EmptyState(message: 'Your cart is empty'),
+      );
     }
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
