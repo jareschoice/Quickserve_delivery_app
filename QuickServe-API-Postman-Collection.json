@@ -1,0 +1,735 @@
+{
+	"info": {
+		"name": "QuickServe API",
+		"description": "Complete API collection for QuickServe food delivery platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5555/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Register Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Customer\",\n  \"email\": \"customer@test.com\",\n  \"password\": \"Test123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register/customer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								"customer"
+							]
+						},
+						"description": "Register a new customer account. Returns user object and JWT token."
+					}
+				},
+				{
+					"name": "Register Vendor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Restaurant Owner\",\n  \"email\": \"vendor@test.com\",\n  \"password\": \"Test123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register/vendor",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								"vendor"
+							]
+						},
+						"description": "Register a new vendor (restaurant owner) account."
+					}
+				},
+				{
+					"name": "Register Rider",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Delivery Rider\",\n  \"email\": \"rider@test.com\",\n  \"password\": \"Test123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register/rider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								"rider"
+							]
+						},
+						"description": "Register a new delivery rider account."
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"token\", jsonData.token);",
+									"    console.log(\"Token saved: \" + jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@quickserve.com\",\n  \"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with email and password. Auto-saves token to collection variable."
+					}
+				},
+				{
+					"name": "Dev Verify Email (Bypass)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"vendor@test.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/dev-verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"dev-verify"
+							]
+						},
+						"description": "Development endpoint to manually verify an email without clicking verification link."
+					}
+				}
+			]
+		},
+		{
+			"name": "🏪 Vendor Operations",
+			"item": [
+				{
+					"name": "Register Business Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"businessName\": \"QuickServe Restaurant\",\n  \"businessAddress\": \"123 Main St, Lagos, Nigeria\",\n  \"businessPhone\": \"08012345678\",\n  \"businessCategory\": \"Fast Food\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/vendors/register-business",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendors",
+								"register-business"
+							]
+						},
+						"description": "⚠️ THIS IS THE ENDPOINT YOU TRIED! You need to:\n1. Login first to get a token\n2. Add Authorization header with Bearer token\n3. Send JSON body with business details"
+					}
+				},
+				{
+					"name": "Get My Vendor Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/vendors/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendors",
+								"me"
+							]
+						},
+						"description": "Get your vendor profile information."
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Jollof Rice",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Delicious Nigerian Jollof Rice",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "2500",
+									"type": "text"
+								},
+								{
+									"key": "category",
+									"value": "Main Dishes",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/vendors/create-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendors",
+								"create-product"
+							]
+						},
+						"description": "Create a new product. Supports image upload."
+					}
+				},
+				{
+					"name": "Get My Products",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/vendors/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendors",
+								"products"
+							]
+						},
+						"description": "List all products for your vendor account."
+					}
+				},
+				{
+					"name": "Get Wallet Balance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/vendors/wallet",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendors",
+								"wallet"
+							]
+						},
+						"description": "Check your vendor wallet balance and withdrawal eligibility."
+					}
+				},
+				{
+					"name": "Request Withdrawal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 5000,\n  \"bankName\": \"GTBank\",\n  \"accountNumber\": \"0123456789\",\n  \"accountName\": \"Restaurant Owner\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/vendors/withdraw",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendors",
+								"withdraw"
+							]
+						},
+						"description": "Request to withdraw funds from vendor wallet (max once per week)."
+					}
+				}
+			]
+		},
+		{
+			"name": "📦 Orders",
+			"item": [
+				{
+					"name": "Get My Orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/orders/mine",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"mine"
+							]
+						},
+						"description": "Get all orders related to your account (customer sees their orders, vendor sees orders for their restaurant)."
+					}
+				},
+				{
+					"name": "Accept Order (Vendor)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/orders/ORDER_ID_HERE/accept",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"ORDER_ID_HERE",
+								"accept"
+							]
+						},
+						"description": "Vendor accepts an order. Replace ORDER_ID_HERE with actual order ID."
+					}
+				},
+				{
+					"name": "Pack Order (Vendor)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/orders/ORDER_ID_HERE/pack",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"ORDER_ID_HERE",
+								"pack"
+							]
+						},
+						"description": "Mark order as packed and ready for pickup."
+					}
+				}
+			]
+		},
+		{
+			"name": "💳 Payments",
+			"item": [
+				{
+					"name": "Initialize Order Payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"items\": [\n    {\n      \"product\": \"PRODUCT_ID_HERE\",\n      \"quantity\": 2,\n      \"price\": 2500\n    }\n  ],\n  \"deliveryAddress\": \"123 Main St, Lagos\",\n  \"deliveryPhone\": \"08012345678\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payments/init-order-payment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"payments",
+								"init-order-payment"
+							]
+						},
+						"description": "Initialize payment for a new order. Returns Paystack payment URL."
+					}
+				},
+				{
+					"name": "Verify Payment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payments/verify?reference=PAYMENT_REFERENCE",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"payments",
+								"verify"
+							],
+							"query": [
+								{
+									"key": "reference",
+									"value": "PAYMENT_REFERENCE"
+								}
+							]
+						},
+						"description": "Verify a payment using Paystack reference."
+					}
+				}
+			]
+		},
+		{
+			"name": "👤 Admin",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						},
+						"description": "Admin only: Get all users in the system."
+					}
+				},
+				{
+					"name": "Get All Vendors",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/vendors",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"vendors"
+							]
+						},
+						"description": "Admin only: Get all vendors with KYC status."
+					}
+				},
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"stats"
+							]
+						},
+						"description": "Admin only: Get platform statistics (users, orders, revenue)."
+					}
+				}
+			]
+		},
+		{
+			"name": "📄 KYC",
+			"item": [
+				{
+					"name": "Submit KYC",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idType\": \"NIN\",\n  \"idNumber\": \"12345678901\",\n  \"bvn\": \"22222222222\",\n  \"businessName\": \"My Restaurant\",\n  \"businessAddress\": \"123 Main St\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/kyc/submit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"kyc",
+								"submit"
+							]
+						},
+						"description": "Submit KYC documents for vendor or rider verification."
+					}
+				},
+				{
+					"name": "Get KYC Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/kyc/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"kyc",
+								"status"
+							]
+						},
+						"description": "Check your KYC verification status."
+					}
+				}
+			]
+		},
+		{
+			"name": "🏥 Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5555/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5555",
+					"path": [
+						"health"
+					]
+				},
+				"description": "✅ THIS ONE WORKS IN BROWSER!\nSimple health check endpoint to verify server is running."
+			}
+		}
+	]
+}

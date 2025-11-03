@@ -15,12 +15,12 @@ import { createServer } from 'http';
 import { Server as IOServer } from 'socket.io';
 
 // ===============================
-// 🧭 Route Imports
+// 🧭 Route Imports (Legacy/V1)
 // ===============================
 import authRoutes from './src/routes/authRoutes.js';
 import vendorRoutes from './src/routes/vendorRoutes.js';
 import riderRoutes from './src/routes/riderRoutes.js';
-import orderRoutes from './src/routes/orderRoutes.js';
+// import orderRoutes from './src/routes/orderRoutes.js'; // ❌ File doesn't exist - using V2 instead
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import emailRoutes from './src/routes/emailRoutes.js';
 
@@ -81,12 +81,12 @@ app.get('/', (req, res) => {
 });
 
 // ===============================
-// 📦 API Routes
+// 📦 API Routes (Legacy/V1)
 // ===============================
 app.use('/auth', authRoutes);
 app.use('/vendors', vendorRoutes);
 app.use('/riders', riderRoutes);
-app.use('/orders', orderRoutes);
+// app.use('/orders', orderRoutes); // ❌ Commented - file doesn't exist, use /api/orders instead
 app.use('/payments', paymentRoutes);
 app.use('/api/email', emailRoutes);
 

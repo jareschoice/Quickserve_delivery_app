@@ -1,0 +1,395 @@
+{
+  "info": {
+    "name": "QuickServe API Collection",
+    "_postman_id": "quickserve-api-2025",
+    "description": "Complete API collection for QuickServe Delivery Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register Vendor",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Vendor\",\n  \"email\": \"vendor@test.com\",\n  \"password\": \"password123\",\n  \"role\": \"vendor\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Customer\",\n  \"email\": \"customer@test.com\",\n  \"password\": \"password123\",\n  \"role\": \"customer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Rider",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Rider\",\n  \"email\": \"rider@test.com\",\n  \"password\": \"password123\",\n  \"role\": \"rider\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor@test.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Dev Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor@test.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/dev-verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "dev-verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 KYC Routes (FIXED)",
+      "item": [
+        {
+          "name": "Submit KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idUrl\": \"https://example.com/id-card.jpg\",\n  \"utilityBillUrl\": \"https://example.com/utility-bill.pdf\",\n  \"bankName\": \"GTBank\",\n  \"accountNumber\": \"0123456789\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Get KYC Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kyc/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc", "status"]
+            }
+          }
+        },
+        {
+          "name": "Admin Verify Vendor KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"VENDOR_ID_HERE\",\n  \"accountName\": \"Test Vendor\",\n  \"accountNumber\": \"0123456789\",\n  \"bankCode\": \"058\",\n  \"bankName\": \"GTBank\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/kyc/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kyc", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏪 Vendor Routes",
+      "item": [
+        {
+          "name": "Create Vendor Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storeName\": \"My Awesome Store\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vendors/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendors", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get My Vendor Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vendors/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendors", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vendors/wallet",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vendors", "wallet"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Product Routes",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jollof Rice\",\n  \"description\": \"Delicious Nigerian Jollof Rice\",\n  \"price\": 1500,\n  \"category\": \"food\",\n  \"quantity\": 50,\n  \"prepDurationMins\": 30,\n  \"imageUrl\": \"https://example.com/jollof.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            }
+          }
+        },
+        {
+          "name": "List All Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            }
+          }
+        },
+        {
+          "name": "Get My Products (Vendor)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/mine",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "mine"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛒 Order Routes",
+      "item": [
+        {
+          "name": "Create Order (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{customer_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendorId\": \"VENDOR_ID_HERE\",\n  \"items\": [\n    {\n      \"productId\": \"PRODUCT_ID_HERE\",\n      \"quantity\": 2,\n      \"price\": 1500\n    }\n  ],\n  \"distanceKm\": 5,\n  \"deliveryAddress\": \"123 Main Street, Lagos\",\n  \"origin\": { \"lat\": 6.5244, \"lng\": 3.3792 },\n  \"destination\": { \"lat\": 6.4541, \"lng\": 3.3947 }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{vendor_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/vendor",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "vendor"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{customer_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/customer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "customer"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚴 Rider Routes",
+      "item": [
+        {
+          "name": "Get Assigned Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{rider_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/riders/assigned",
+              "host": ["{{base_url}}"],
+              "path": ["api", "riders", "assigned"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👑 Admin Routes",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Health Check",
+      "item": [
+        {
+          "name": "Server Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5555"
+    },
+    {
+      "key": "vendor_token",
+      "value": ""
+    },
+    {
+      "key": "customer_token",
+      "value": ""
+    },
+    {
+      "key": "rider_token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    }
+  ]
+}

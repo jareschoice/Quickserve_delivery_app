@@ -35,17 +35,17 @@ android {
         create("consumer") {
             dimension = "app"
             applicationId = "com.quickserve.consumer"
-            resValue("string", "app_name", "QuickServe")
+            resValue("string", "app_name", "QuickServe Customer")
         }
         create("vendor") {
             dimension = "app"
-            applicationId = "com.quickserve.quickvendor"
-            resValue("string", "app_name", "QuickVendor")
+            applicationId = "com.quickserve.vendor"
+            resValue("string", "app_name", "QuickServe Vendor")
         }
         create("rider") {
             dimension = "app"
-            applicationId = "com.quickserve.quickride"
-            resValue("string", "app_name", "QuickRide")
+            applicationId = "com.quickserve.rider"
+            resValue("string", "app_name", "QuickServe Rider")
         }
     }
 

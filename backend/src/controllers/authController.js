@@ -1,8 +1,7 @@
-// controllers/authController.js
 import crypto from 'crypto'
 import User from '../models/User.js'
 import { signJWT } from '../utils/jwt.js'
-import sendEmail from '../utils/email.js' // you already have this
+import { sendEmail } from '../utils/emailClient.js' // you already have this
                                                        // (we’ll reuse it)
 
 const minutesFromNow = (m) => new Date(Date.now() + m * 60 * 1000)
@@ -12,22 +11,24 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 const buildVerifyLink = (token) => {
   const base = process.env.APP_BASE_URL || 'http://localhost:5000'
+  // You can later point this to a pretty frontend route
   return `${base}/auth/verify?token=${encodeURIComponent(token)}`
 }
 
-// ===============================
-// EMAIL HELPERS
-// ===============================
 const sendVerificationEmail = async (user) => {
   const url = buildVerifyLink(user.verifyToken)
-  console.log(`\n🔗 VERIFICATION LINK for ${user.email}: ${url}\n`)
-
+  
+  // 🚀 DEVELOPMENT: Log verification link to console
+  console.log(`\n🔗 VERIFICATION LINK for ${user.email}:`);
+  console.log(`${url}\n`);
+  
   const html = `
   <div style="font-family:Arial;max-width:560px;margin:auto">
     <h2>Verify your QuickServe account</h2>
     <p>Hi ${user.name},</p>
     <p>Thanks for signing up as <b>${user.role}</b>. Please verify your email to activate your account.</p>
-    <p><a href="${url}" style="background:#16a34a;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;">
+    <p><a href="${url}" 
+          style="background:#16a34a;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;">
       Verify My Email
     </a></p>
     <p>If the button doesn't work, copy this link:</p>
@@ -35,11 +36,17 @@ const sendVerificationEmail = async (user) => {
     <hr/>
     <small>QuickServe • getquickserves.com</small>
   </div>`
-  await sendEmail({ to: user.email, subject: 'Verify your QuickServe account', html })
+  await sendEmail({
+    to: user.email,
+    subject: 'Verify your QuickServe account',
+    html
+  })
 }
 
 const sendOTPEmail = async (user) => {
-  console.log(`\n🔢 OTP for ${user.email}: ${user.otp}\n`)
+  // 🚀 DEVELOPMENT: Log OTP to console
+  console.log(`\n🔢 OTP for ${user.email}: ${user.otp}\n`);
+  
   const html = `
   <div style="font-family:Arial;max-width:560px;margin:auto">
     <h2>Your QuickServe Verification Code</h2>
@@ -53,17 +60,20 @@ const sendOTPEmail = async (user) => {
     <hr/>
     <small>QuickServe • getquickserves.com</small>
   </div>`
-  await sendEmail({ to: user.email, subject: 'Your QuickServe verification code', html })
+  await sendEmail({
+    to: user.email,
+    subject: 'Your QuickServe verification code',
+    html
+  })
 }
 
-// ===============================
-// REGISTERERS
-// ===============================
+// ---------- REGISTERERS ----------
 const baseRegister = async (req, res, role) => {
   try {
     const { name, email, password, profile, useOTP = false } = req.body
-    if (!name || !email || !password)
+    if (!name || !email || !password) {
       return res.status(400).json({ error: 'Missing fields' })
+    }
 
     const exists = await User.findOne({ email })
     if (exists) return res.status(409).json({ error: 'Email already in use' })
@@ -82,17 +92,19 @@ const baseRegister = async (req, res, role) => {
 
     let emailSent = true
     try {
-      if (useOTP) await sendOTPEmail(user)
-      else await sendVerificationEmail(user)
+      if (useOTP) {
+        await sendOTPEmail(user)
+      } else {
+        await sendVerificationEmail(user)
+      }
     } catch (err) {
       console.error('Failed to send verification email:', err)
+      // don't fail registration if email cannot be sent; user can request resend
       emailSent = false
     }
 
     return res.status(201).json({ 
-      message: useOTP 
-        ? 'Registered. Please enter the OTP sent to your email.'
-        : 'Registered. Please verify email.',
+      message: useOTP ? 'Registered. Please enter the OTP sent to your email.' : 'Registered. Please verify email.',
       emailSent,
       useOTP 
     })
@@ -106,9 +118,7 @@ export const registerCustomer = (req, res) => baseRegister(req, res, 'customer')
 export const registerVendor   = (req, res) => baseRegister(req, res, 'vendor')
 export const registerRider    = (req, res) => baseRegister(req, res, 'rider')
 
-// ===============================
-// VERIFY EMAIL
-// ===============================
+// ---------- VERIFY ----------
 export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query
@@ -117,8 +127,9 @@ export const verifyEmail = async (req, res) => {
     const user = await User.findOne({ verifyToken: token })
     if (!user) return res.status(400).json({ error: 'Invalid token' })
     if (user.isVerified) return res.json({ message: 'Already verified' })
-    if (user.verifyTokenExpires && user.verifyTokenExpires < new Date())
+    if (user.verifyTokenExpires && user.verifyTokenExpires < new Date()) {
       return res.status(400).json({ error: 'Token expired' })
+    }
 
     user.isVerified = true
     user.verifyToken = undefined
@@ -132,9 +143,7 @@ export const verifyEmail = async (req, res) => {
   }
 }
 
-// ===============================
-// RESEND VERIFICATION
-// ===============================
+// ---------- RESEND ----------
 export const resendVerification = async (req, res) => {
   try {
     const { email, useOTP = false } = req.body
@@ -153,13 +162,15 @@ export const resendVerification = async (req, res) => {
 
     let emailSent = true
     try {
-      if (useOTP) await sendOTPEmail(user)
-      else await sendVerificationEmail(user)
+      if (useOTP) {
+        await sendOTPEmail(user)
+      } else {
+        await sendVerificationEmail(user)
+      }
     } catch (err) {
       console.error('Failed to send verification email (resend):', err)
       emailSent = false
     }
-
     return res.json({ 
       message: useOTP ? 'OTP sent to your email' : 'Verification email sent', 
       emailSent 
@@ -170,9 +181,7 @@ export const resendVerification = async (req, res) => {
   }
 }
 
-// ===============================
-// VERIFY OTP
-// ===============================
+// ---------- VERIFY OTP ----------
 export const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body
@@ -182,8 +191,9 @@ export const verifyOTP = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' })
     if (user.isVerified) return res.json({ message: 'Already verified' })
     if (!user.otp || user.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' })
-    if (user.otpExpires && user.otpExpires < new Date())
+    if (user.otpExpires && user.otpExpires < new Date()) {
       return res.status(400).json({ error: 'OTP expired' })
+    }
 
     user.isVerified = true
     user.otp = undefined
@@ -215,13 +225,19 @@ export const login = async (req, res) => {
     const token = signJWT({ id: user._id, role: user.role })
 
     // ✅ Added redirect info for frontend role-based navigation
-    const redirectTo =
-      user.role === 'vendor'
-        ? '/vendor/dashboard'
-        : user.role === 'rider'
-        ? '/rider/dashboard'
-        : '/customer/home'
+let redirectTo = '/customer/home'; // default
 
+if (user.role === 'vendor') {
+  redirectTo = '/vendor/dashboard';
+} else if (user.role === 'rider') {
+  redirectTo = '/rider/dashboard';
+} else if (user.role === 'customer') {
+  redirectTo = '/customer/home';
+} else if (user.role === 'admin') {
+  redirectTo = '/admin/panel';
+}
+
+    // ✅ Send clearer success response
     return res.json({
       success: true,
       message: `Welcome back, ${user.name}!`,
@@ -240,9 +256,8 @@ export const login = async (req, res) => {
   }
 }
 
-// ===============================
-// CURRENT USER
-// ===============================
+
+// ---------- ME ----------
 export const me = async (req, res) => {
   return res.json({
     id: req.user._id,

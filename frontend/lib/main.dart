@@ -26,8 +26,17 @@ class QuickServeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'QuickServe',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        primaryColor: const Color(0xFFFF8C00), // Orange
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFF8C00), // Orange
+          primary: const Color(0xFFFF8C00), // Orange
+          secondary: const Color(0xFFFFD700), // Gold
+        ),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFFF8C00), // Orange
+          foregroundColor: Color(0xFFFFD700), // Gold text
+        ),
       ),
       home:
           const CustomSplashScreen(), // Use your custom designed splash screen
@@ -59,7 +68,7 @@ class _CustomSplashScreenState extends State<CustomSplashScreen> {
     // Show your beautiful splash for 6 seconds like you requested
     await Future.delayed(const Duration(seconds: 6));
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = prefs.getString('auth_token'); // Fixed: Use consistent key
     if (!mounted) return;
     if (token == null || token.isEmpty) {
       // If not logged in, show your custom onboarding first

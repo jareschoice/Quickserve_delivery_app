@@ -1,29 +1,77 @@
-import { Router } from 'express'
-import { authRequired } from '../middleware/auth.js'
-import { upload } from '../utils/upload.js'
-import { createProduct, listProducts, packOrder, getWallet, requestWithdraw, setNotificationPref } from '../controllers/vendorController.js'
+// ===============================
+// FILE: src/routes/vendorRoutes.js
+// ===============================
 
-const router = Router()
+import express from 'express'
+import multer from 'multer'
+import path from 'path'
+import {
+  registerBusiness,
+  getBusiness,
+  createProduct,
+  listProducts,
+  packOrder,
+  getWallet,
+  requestWithdraw,
+  setNotificationPref,
+  setStoreStatus,
+  getVendorAnalytics,
+  createVendor
+} from '../controllers/vendorController.js'
+import { authRequired } from '../middleware/auth.js' // ✅ FIXED import
 
-router.get('/me', authRequired('vendor'), (req, res) => {
-  res.json({
-    vendor: req.user.vendor || {},
-    user: { id: req.user._id, fullName: req.user.fullName }
-  })
+// ✅ Initialize router BEFORE using it
+const router = express.Router()
+
+// ✅ Confirm router loaded
+console.log('✅ vendorRoutes.js has been loaded into Express')
+
+// =====================================
+// ✅ Test route to verify connection
+// =====================================
+router.get('/test', (req, res) => {
+  console.log('✅ /api/vendors/test hit successfully')
+  res.json({ ok: true, message: 'Vendor routes are active' })
 })
 
-// Products
-router.post('/products', authRequired('vendor'), upload.single('image'), createProduct)
+// =====================================
+// 🧾 FILE UPLOAD SETUP (Product images)
+// =====================================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'uploads/'),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+})
+const upload = multer({ storage })
+
+// =====================================
+// ✳️ VENDOR BUSINESS MANAGEMENT
+// =====================================
+router.post('/register-business', authRequired('vendor'), registerBusiness)
+router.get('/get-business', authRequired('vendor'), getBusiness)
+router.post('/create-vendor', authRequired('admin'), createVendor)
+
+// =====================================
+// ✳️ PRODUCT MANAGEMENT
+// =====================================
+router.post('/create-product', authRequired('vendor'), upload.single('image'), createProduct)
 router.get('/products', authRequired('vendor'), listProducts)
 
-// Orders
-router.post('/orders/:id/pack', authRequired('vendor'), packOrder)
+// =====================================
+// ✳️ ORDER MANAGEMENT
+// =====================================
+router.put('/orders/:id/pack', authRequired('vendor'), packOrder)
 
-// Wallet
+// =====================================
+// ✳️ WALLET & FINANCE
+// =====================================
 router.get('/wallet', authRequired('vendor'), getWallet)
-router.post('/wallet/withdraw', authRequired('vendor'), requestWithdraw)
+router.post('/withdraw', authRequired('vendor'), requestWithdraw)
 
-// Settings
-router.post('/settings/notifications', authRequired('vendor'), setNotificationPref)
+// =====================================
+// ✳️ SETTINGS & NOTIFICATIONS
+// =====================================
+router.post('/notifications', authRequired('vendor'), setNotificationPref)
+router.post('/store-status', authRequired('vendor'), setStoreStatus)
+router.get('/analytics', authRequired('vendor'), getVendorAnalytics)
 
 export default router

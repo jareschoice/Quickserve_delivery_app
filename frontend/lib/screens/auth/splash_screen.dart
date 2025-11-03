@@ -26,35 +26,30 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _boot() async {
     try {
-      final me = await ApiClient.me();
+      final apiClient = ApiClient();
+      final me = await apiClient.me();
       if (!mounted) return;
-      if (me != null) {
-        final role = roleFromString(me['user']?['role']);
-        Widget next;
-        switch (role) {
-          case UserRole.vendor:
-            next = const VendorHome();
-            break;
-          case UserRole.rider:
-            next = const RiderHome();
-            break;
-          case UserRole.admin:
-            next = const AdminHome();
-            break;
-          case UserRole.consumer:
-          default:
-            next = const ConsumerHome();
-        }
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => next),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
+      
+      final role = roleFromString(me['user']?['role']);
+      Widget next;
+      switch (role) {
+        case UserRole.vendor:
+          next = const VendorHome();
+          break;
+        case UserRole.rider:
+          next = const RiderHome();
+          break;
+        case UserRole.admin:
+          next = const AdminHome();
+          break;
+        case UserRole.consumer:
+        default:
+          next = const ConsumerHome();
       }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => next),
+      );
     } catch (_) {
       if (!mounted) return;
       Navigator.pushReplacement(

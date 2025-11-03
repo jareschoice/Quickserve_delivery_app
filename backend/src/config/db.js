@@ -18,10 +18,7 @@ export async function connectToMongoDB() {
     while (attempts < 5) {
         try {
             console.log("🧭 Connecting to MongoDB Atlas...");
-            await mongoose.connect(uri, {
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
-            });
+            await mongoose.connect(uri);
             console.log("✅ MongoDB Atlas connected successfully!");
             global.dbConnected = true;
             return;

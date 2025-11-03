@@ -23,31 +23,52 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFF8C00), // Orange background
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Watermark background
-          Image.asset(
-            'assets/images/Quickserve_logo.jpg',
-            fit: BoxFit.cover,
-            color: Colors.black.withOpacity(0.15),
-            colorBlendMode: BlendMode.darken,
-          ),
-
           // Center content
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset('assets/images/Quickserve_icon.jpg', height: 100),
-                const SizedBox(height: 16),
+                // Large Q icon
+                Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withOpacity(0.2), // Gold tint
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Q',
+                      style: TextStyle(
+                        fontSize: 100,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFFFD700), // Gold letter
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 const Text(
                   "QuickServe",
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
+                    color: Color(0xFFFFD700), // Gold text
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Order Food Fast",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFFFFD700), // Gold text
+                    letterSpacing: 0.8,
                   ),
                 ),
               ],
