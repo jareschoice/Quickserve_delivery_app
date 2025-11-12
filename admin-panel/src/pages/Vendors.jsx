@@ -4,6 +4,15 @@ import axios from 'axios'
 const Vendors = () => {
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
+  const [editingVendor, setEditingVendor] = useState(null)
+  const [editForm, setEditForm] = useState({
+    storeName: '',
+    businessName: '',
+    businessAddress: '',
+    businessPhone: '',
+    category: '',
+    isActive: true
+  })
 
   useEffect(() => {
     fetchVendors()
@@ -37,6 +46,44 @@ const Vendors = () => {
     }
   }
 
+  const handleEditVendor = (vendor) => {
+    setEditingVendor(vendor._id)
+    setEditForm({
+      storeName: vendor.storeName || '',
+      businessName: vendor.businessName || '',
+      businessAddress: vendor.businessAddress || '',
+      businessPhone: vendor.businessPhone || '',
+      category: vendor.category || '',
+      isActive: vendor.isActive !== false
+    })
+  }
+
+  const handleSaveVendor = async (vendorId) => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      await axios.put(`/api/admin/vendors/${vendorId}`, editForm, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      alert('Vendor updated successfully!')
+      setEditingVendor(null)
+      fetchVendors()
+    } catch (error) {
+      alert('Failed to update vendor: ' + (error.response?.data?.error || error.message))
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingVendor(null)
+    setEditForm({
+      storeName: '',
+      businessName: '',
+      businessAddress: '',
+      businessPhone: '',
+      category: '',
+      isActive: true
+    })
+  }
+
   if (loading) {
     return <div>Loading vendors...</div>
   }
@@ -50,17 +97,60 @@ const Vendors = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Store Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">KYC Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Wallet</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {vendors.map(vendor => (
               <tr key={vendor._id}>
-                <td className="px-6 py-4 whitespace-nowrap font-medium">
-                  {vendor.storeName || 'N/A'}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editingVendor === vendor._id ? (
+                    <input
+                      type="text"
+                      value={editForm.storeName}
+                      onChange={(e) => setEditForm({ ...editForm, storeName: e.target.value })}
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    <span className="font-medium">{vendor.storeName || 'N/A'}</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editingVendor === vendor._id ? (
+                    <input
+                      type="text"
+                      value={editForm.businessName}
+                      onChange={(e) => setEditForm({ ...editForm, businessName: e.target.value })}
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  ) : (
+                    <span>{vendor.businessName || 'N/A'}</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editingVendor === vendor._id ? (
+                    <select
+                      value={editForm.category}
+                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                      className="border rounded px-2 py-1 w-full"
+                    >
+                      <option value="">Select category</option>
+                      <option value="restaurant">Restaurant</option>
+                      <option value="pharmacy">Pharmacy</option>
+                      <option value="shop">Shop</option>
+                      <option value="supermarket">Supermarket</option>
+                      <option value="minimart">Mini Mart</option>
+                      <option value="market">Local Market</option>
+                    </select>
+                  ) : (
+                    <span>{vendor.category || 'N/A'}</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {vendor.user?.name || 'N/A'}
@@ -78,14 +168,59 @@ const Vendors = () => {
                   ₦{(vendor.wallet || 0).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {vendor.user?.kycStatus === 'pending' && (
-                    <button
-                      onClick={() => handleApproveKYC(vendor.user._id)}
-                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                  {editingVendor === vendor._id ? (
+                    <select
+                      value={editForm.isActive}
+                      onChange={(e) => setEditForm({ ...editForm, isActive: e.target.value === 'true' })}
+                      className="border rounded px-2 py-1"
                     >
-                      Approve KYC
-                    </button>
+                      <option value="true">Active</option>
+                      <option value="false">Inactive</option>
+                    </select>
+                  ) : (
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      vendor.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {vendor.isActive !== false ? 'Active' : 'Inactive'}
+                    </span>
                   )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex gap-2">
+                    {editingVendor === vendor._id ? (
+                      <>
+                        <button
+                          onClick={() => handleSaveVendor(vendor._id)}
+                          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleEditVendor(vendor)}
+                          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+                        >
+                          Edit
+                        </button>
+                        {vendor.user?.kycStatus === 'pending' && (
+                          <button
+                            onClick={() => handleApproveKYC(vendor.user._id)}
+                            className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+                          >
+                            Approve KYC
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -98,6 +233,8 @@ const Vendors = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Modal could be added here for better UX */}
     </div>
   )
 }

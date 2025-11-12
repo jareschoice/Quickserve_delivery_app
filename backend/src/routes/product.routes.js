@@ -8,7 +8,8 @@ const router = express.Router();
 // Vendor add product
 router.post("/", authRequired("vendor"), async (req, res) => {
   try {
-    const v = await Vendor.findOne({ user: req.user.id });
+    const userId = req.user._id || req.user.id;
+    const v = await Vendor.findOne({ user: userId });
     if (!v) return res.status(400).json({ error: "Vendor profile not found" });
     const { name, description, price, imageUrl, category, quantity, prepDurationMins } = req.body;
     const p = await Product.create({
@@ -63,8 +64,11 @@ router.get("/", async (req, res) => {
 // Authenticated vendor's products
 router.get("/mine", authRequired("vendor"), async (req, res) => {
   try {
-    const v = await Vendor.findOne({ user: req.user.id });
+    // JWT token contains _id field, not id
+    const userId = req.user._id || req.user.id;
+    const v = await Vendor.findOne({ user: userId });
     if (!v) return res.status(400).json({ error: "Vendor profile not found" });
+    // Products reference Vendor._id (not User._id like Orders do)
     const items = await Product.find({ vendorId: v._id }).sort({ createdAt: -1 });
     res.json({ items });
   } catch (e) {

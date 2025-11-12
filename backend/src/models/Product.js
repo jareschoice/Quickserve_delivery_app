@@ -27,9 +27,12 @@ const ProductSchema = new mongoose.Schema({
   // ✅ Inventory and stock management
   quantity: { type: Number, required: true, min: 0 },
   inStock: { type: Boolean, default: true },
+  unit: { type: String, default: 'piece' }, // piece, plate, bowl, cup, bottle, pack, serving
+  available: { type: Boolean, default: true }, // For event system availability toggle
 
   // ✅ Media
   imageUrl: { type: String },
+  image: { type: String }, // For event system uploads
   gallery: { type: [String], default: [] },
 
   // ✅ Preparation time (for restaurants)

@@ -1,23 +1,46 @@
+
+
+
+// ===============================
+// FILE: backend/models/Order.js
+// ===============================
 import mongoose from 'mongoose'
 
 const OrderSchema = new mongoose.Schema({
   consumerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   riderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+  // Multi-vendor order grouping
+  orderGroupId: { type: String, index: true },
+  isMultiVendor: { type: Boolean, default: false },
+
   items: [{
     name: String,
     price: Number,
-    qty: Number
+    qty: Number,
+    imageUrl: String
   }],
   subtotal: Number,
   deliveryFee: Number,
   platformFee: Number,
   total: Number,
+
   status: { 
     type: String, 
-    enum: ['placed','accepted','preparing','waiting_pickup','ready','dispatch_requested','assigned','in_transit','arrived_customer','delivered','cancelled'],
+    enum: [
+      'placed', 'accepted', 'preparing', 'waiting_pickup', 'ready', 
+      'dispatch_requested', 'assigned', 'in_transit', 'arrived_customer', 
+      'delivered', 'cancelled'
+    ],
     default: 'placed'
   },
+
+  // Dispatcher tracking
+  dispatcher: { type: mongoose.Schema.Types.ObjectId, ref: 'Dispatcher' },
+  dispatcherAssignedAt: Date,
+  pickedUpAt: Date,
+  inTransitAt: Date,
   qrConsumerToken: String,
   qrRiderToken: String,
   qrConsumerVerifiedAt: Date,
@@ -26,6 +49,11 @@ const OrderSchema = new mongoose.Schema({
   distanceKm: Number,
   deliveryAddress: String,
   notes: String,
+
+  // ✅ NEW FIELDS (for dispatcher/vendor info)
+  seatNumber: { type: String },
+  phoneNumber: { type: String },
+
   payment: {
     reference: String,
     paid: { type: Boolean, default: false },

@@ -5,9 +5,42 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QuickServe Admin Panel</title>
+    <link rel="stylesheet" href="/chat-widget.css">
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Chat Widget -->
+    <div id="chat-widget">
+        <button id="chat-toggle">💬</button>
+        <div id="chat-box">
+            <div>Chat with OLOWOJARE</div>
+            <div id="chat-messages">
+                <p>👋 Hello! My name is OLOWOJARE, and I’m here to assist you with anything. Thanks for reaching out!</p>
+            </div>
+            <input id="chat-input" type="text" placeholder="Type your message...">
+        </div>
+    </div>
+    <script>
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatToggle.addEventListener('click', () => {
+            chatBox.style.display = chatBox.style.display === 'none' ? 'block' : 'none';
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+                const message = chatInput.value;
+                const newMessage = document.createElement('p');
+                newMessage.textContent = `You: ${message}`;
+                chatMessages.appendChild(newMessage);
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    </script>
   </body>
 </html>

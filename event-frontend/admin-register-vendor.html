@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Vendor - QuickServe Admin</title>
+    <!-- ✅ Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+  <!-- ✅ Shared Styles -->
+  <link rel="stylesheet" href="/event-frontend/css/styles.css" />
+  <link rel="stylesheet" href="/event-frontend/css/web-shared.css" />
+  <link rel="stylesheet" href="/event-frontend/css/chat-widget.css" />
+
+  <style>
+      :root {
+          --quickserve-orange: #FF6B00;
+          --quickserve-gold: #FFD700;
+      }
+        body {
+            background-color: #f8f9fa;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #FF6B00, #FFD700);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+        .logo-q {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--quickserve-orange);
+            margin-right: 12px;
+        }
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--quickserve-orange);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.25);
+        }
+        .btn-quickserve {
+            background: linear-gradient(135deg, #FF6B00, #FFD700);
+            border: none;
+            color: white;
+            padding: 12px 32px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .btn-quickserve:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+        .back-link:hover {
+            opacity: 0.8;
+            color: white;
+        }
+    </style>
+    <!-- ✅ Audio -->
+  <audio id="soundReady" src="/event-frontend/audio/ready.mp3" preload="auto"></audio>
+  <audio id="soundDelivered" src="/event-frontend/audio/delivered.mp3" preload="auto"></audio>
+</head>
+<body>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <a href="admin.html" class="back-link mb-3 d-inline-block">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <div class="logo-q">Q</div>
+                <div>
+                    <h2 class="mb-0">Register New Vendor</h2>
+                    <p class="mb-0 opacity-75">Add a new vendor to QuickServe platform</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-card">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> This will create a vendor account for both the main app and event platform.
+                    </div>
+
+                    <form id="vendorForm" novalidate>
+                        <div class="row g-4">
+                            <!-- Business Name -->
+                            <div class="col-md-6">
+                                <label for="businessName" class="form-label">
+                                    <i class="bi bi-shop"></i> Business Name *
+                                </label>
+                                <input type="text" class="form-control" id="businessName" required
+                                    placeholder="e.g., Mama's Kitchen">
+                            </div>
+
+                            <!-- Contact Person -->
+                            <div class="col-md-6">
+                                <label for="contactPerson" class="form-label">
+                                    <i class="bi bi-person"></i> Contact Person *
+                                </label>
+                                <input type="text" class="form-control" id="contactPerson" required
+                                    placeholder="e.g., John Doe">
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">
+                                    <i class="bi bi-envelope"></i> Email Address *
+                                </label>
+                                <input type="email" class="form-control" id="email" required
+                                    placeholder="vendor@example.com">
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">
+                                    <i class="bi bi-telephone"></i> Phone Number *
+                                </label>
+                                <input type="tel" class="form-control" id="phone" required
+                                    placeholder="+234 800 000 0000">
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">
+                                    <i class="bi bi-tag"></i> Category *
+                                </label>
+                                <select class="form-select" id="category" required>
+                                    <option value="">Select category...</option>
+                                </select>
+                            </div>
+
+                            <!-- Minimum Order -->
+                            <div class="col-md-6">
+                                <label for="minimumOrder" class="form-label">
+                                    <i class="bi bi-cash"></i> Minimum Order (₦)
+                                </label>
+                                <input type="number" class="form-control" id="minimumOrder"
+                                    placeholder="1000" min="0">
+                            </div>
+
+                            <!-- Address -->
+                            <div class="col-12">
+                                <label for="address" class="form-label">
+                                    <i class="bi bi-geo-alt"></i> Business Address *
+                                </label>
+                                <textarea class="form-control" id="address" rows="2" required
+                                    placeholder="Enter full business address"></textarea>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">
+                                    <i class="bi bi-pin-map"></i> Campus Location
+                                </label>
+                                <select class="form-select" id="location">
+                                    <option value="">Select location...</option>
+                                    <option value="Event Hall">Event Hall</option>
+                                    <option value="Main Campus">Main Campus</option>
+                                    <option value="Hostel Area">Hostel Area</option>
+                                    <option value="Faculty Block">Faculty Block</option>
+                                </select>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-key"></i> Initial Password *
+                                </label>
+                                <input type="password" class="form-control" id="password" required
+                                    placeholder="Minimum 6 characters">
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="description" class="form-label">
+                                    <i class="bi bi-card-text"></i> Business Description
+                                </label>
+                                <textarea class="form-control" id="description" rows="3"
+                                    placeholder="Brief description of the vendor's business (optional)"></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="admin.html" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                    <button type="button" class="btn-quickserve" id="submitBtn">
+                                        <i class="bi bi-check-circle"></i> Register Vendor
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Success Message -->
+                    <div class="alert alert-success mt-4 d-none" id="successMessage">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <strong>Success!</strong> Vendor registered successfully. 
+                        <a href="admin-products.html" class="alert-link">Add products now</a>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div class="alert alert-danger mt-4 d-none" id="errorMessage">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span id="errorText"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Bootstrap Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ Admin Register Vendor Logic -->
+<script type="module">
+  import { API_BASE_URL, AUTH_API_URL, CATEGORY_OPTIONS } from 'js/config.js';
+
+  // ===============================
+  // 🔹 Populate Categories Dropdown
+  // ===============================
+  const catSelect = document.getElementById('category');
+  if (catSelect && catSelect.children.length <= 1) {
+    CATEGORY_OPTIONS.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.key;
+      o.textContent = opt.label;
+      catSelect.appendChild(o);
+    });
+  }
+
+  // ===============================
+  // 🔐 Authentication Check
+  // ===============================
+  console.log('🔍 Checking admin authentication...');
+  const token = localStorage.getItem('eventToken') || localStorage.getItem('token');
+
+  if (!token) {
+    alert('You must login first!');
+    window.location.href = 'login.html';
+    throw new Error('Unauthorized access: no token found');
+  }
+
+  console.log('✅ Token verified. Admin ready.');
+
+  // ===============================
+  // 🧾 Vendor Registration Handler
+  // ===============================
+  document.getElementById('submitBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMessage');
+    const successMsg = document.getElementById('successMessage');
+
+    errorMsg.classList.add('d-none');
+    successMsg.classList.add('d-none');
+
+    const businessName = document.getElementById('businessName').value.trim();
+    const contactPerson = document.getElementById('contactPerson').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const category = document.getElementById('category').value;
+    const address = document.getElementById('address').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!businessName || !contactPerson || !email || !phone || !category || !address || !password) {
+      document.getElementById('errorText').textContent = 'Please fill in all required fields';
+      errorMsg.classList.remove('d-none');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Registering...';
+
+    const formData = {
+      businessName,
+      contactPerson,
+      email,
+      phone,
+      category,
+      minimumOrder: document.getElementById('minimumOrder').value || 1000,
+      address,
+      location: document.getElementById('location').value.trim() || 'Not specified',
+      password,
+      description: document.getElementById('description').value.trim() || '',
+      role: 'vendor',
+      name: businessName
+    };
+
+    try {
+      console.log(➡ Sending to ${AUTH_API_URL}/register);
+      const response = await fetch(${AUTH_API_URL}/register, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': Bearer ${token}
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+      console.log('Response:', data);
+
+      if (response.ok) {
+        // Create vendor profile (optional secondary call)
+        if (data?.token) {
+          try {
+            await fetch(${API_BASE_URL}/vendors/profile, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': Bearer ${data.token}
+              },
+              body: JSON.stringify({ storeName: businessName })
+            });
+          } catch (e) {
+            console.warn('Vendor profile setup skipped:', e.message);
+          }
+        }
+
+        successMsg.classList.remove('d-none');
+        document.getElementById('vendorForm').reset();
+        setTimeout(() => {
+          window.location.href = 'admin.html';
+        }, 2000);
+      } else {
+        document.getElementById('errorText').textContent = data.message || data.error || 'Failed to register vendor';
+        errorMsg.classList.remove('d-none');
+      }
+    } catch (err) {
+      console.error('❌ Error:', err);
+      document.getElementById('errorText').textContent =
+        'Network error: ' + err.message + '. Make sure the backend is running on port 5555.';
+      errorMsg.classList.remove('d-none');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Register Vendor';
+    }
+  });
+</script>
+
+<!-- ✅ Socket.IO Client -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Use dynamic backend IP
+  const socket = io(window.location.protocol + "//" + window.location.hostname + ":5555");
+
+  socket.on("connect", () => console.log("🟢 Socket connected:", socket.id));
+  socket.on("disconnect", () => console.log("🔴 Socket disconnected"));
+
+  // Admin-specific socket notifications
+  socket.on("admin:alert", (msg) => {
+    const toast = document.createElement("div");
+    toast.className = "toast show shadow-lg position-fixed top-0 end-0 m-3";
+    toast.innerHTML = `
+      <div class="toast-header bg-danger text-white">
+        <strong class="me-auto">⚠ Admin Alert</strong>
+        <small>Now</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body">${msg}</div>
+    `;
+    document.body.appendChild(toast);
+    new Audio('/event-frontend/audio/notification.mp3').play();
+    setTimeout(() => toast.remove(), 6000);
+  });
+</script>
+
+<!-- ✅ Shared and Page Modules -->
+<script type="module" src="js/socket.js"></script>
+<script type="module" src="js/admin-register-vendor.js"></script>
+<audio id="readySound" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="deliveredSound" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+</body>
+</html>
+
+

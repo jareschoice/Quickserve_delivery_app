@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Subscriptions - QuickServe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FFE8D6 0%, #FFF5EB 100%);
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+            color: white;
+            padding: 60px 24px 40px;
+            text-align: center;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #FFD700;
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .plans-container {
+            max-width: 1200px;
+            margin: -40px auto 0;
+            padding: 0 16px;
+        }
+
+        .plan-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(255, 107, 0, 0.2);
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .plan-badge.basic {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+        }
+
+        .plan-badge.standard {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .plan-badge.premium {
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .plan-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .plan-price {
+            font-size: 42px;
+            font-weight: 900;
+            color: #FF6B00;
+            margin-bottom: 4px;
+        }
+
+        .plan-price span {
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .plan-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 24px;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: #FFE8D6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FF6B00;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .subscribe-btn.basic {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+        }
+
+        .subscribe-btn.standard {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .subscribe-btn.premium {
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .subscribe-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #FFD700;
+            color: #1a1a1a;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .meal-schedule {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 32px 16px;
+        }
+
+        .meal-schedule-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+            text-align: center;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .time-slot {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .time-slot-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .time-slot-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .time-slot-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 8px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #999;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 8px 12px;
+        }
+
+        .nav-item.active {
+            color: #FF6B00;
+        }
+
+        .nav-item i {
+            font-size: 22px;
+        }
+
+        @media (min-width: 768px) {
+            .plans-container {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+            }
+
+            .plan-card {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="window.history.back()">
+            <i class="bi bi-arrow-left" style="font-size: 20px;"></i>
+        </button>
+        <div class="header-title">Meal Subscriptions</div>
+        <div class="header-subtitle">Choose a plan that fits your lifestyle</div>
+    </div>
+
+    <div class="plans-container">
+        <!-- Basic Plan -->
+        <div class="plan-card">
+            <span class="plan-badge basic">Basic</span>
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">₦25,000<span>/month</span></div>
+            <div class="plan-description">Perfect for working professionals who need consistent weekday meals</div>
+            
+            <ul class="features-list">
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Breakfast & Lunch (Monday - Friday)</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Standard menu selection</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Free delivery within location</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Meal customization available</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Order tracking</span>
+                </li>
+            </ul>
+
+            <button class="subscribe-btn basic" onclick="selectPlan('basic')">
+                Subscribe to Basic
+            </button>
+        </div>
+
+        <!-- Standard Plan -->
+        <div class="plan-card">
+            <span class="recommended-badge">⭐ Recommended</span>
+            <span class="plan-badge standard">Standard</span>
+            <div class="plan-name">Popular</div>
+            <div class="plan-price">₦50,000<span>/month</span></div>
+            <div class="plan-description">Best value for those who want complete meal coverage throughout the week</div>
+            
+            <ul class="features-list">
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>All 3 meals daily (7 days/week)</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Weekend specials included</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Premium menu selection</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Priority delivery</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Advance meal scheduling</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Dietary preferences supported</span>
+                </li>
+            </ul>
+
+            <button class="subscribe-btn standard" onclick="selectPlan('standard')">
+                Subscribe to Standard
+            </button>
+        </div>
+
+        <!-- Premium Plan -->
+        <div class="plan-card">
+            <span class="plan-badge premium">Premium</span>
+            <div class="plan-name">Elite</div>
+            <div class="plan-price">₦75,000<span>/month</span></div>
+            <div class="plan-description">Ultimate dining experience with gourmet options and exclusive benefits</div>
+            
+            <ul class="features-list">
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Gourmet meals + healthy snacks</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Chef's special menu access</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Express delivery (30 min guarantee)</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Unlimited customizations</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Personal meal planner</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>24/7 priority support</span>
+                </li>
+                <li>
+                    <div class="feature-icon"><i class="bi bi-check"></i></div>
+                    <span>Exclusive monthly perks</span>
+                </li>
+            </ul>
+
+            <button class="subscribe-btn premium" onclick="selectPlan('premium')">
+                Subscribe to Premium
+            </button>
+        </div>
+    </div>
+
+    <div class="meal-schedule">
+        <div class="meal-schedule-title">Daily Meal Schedule</div>
+        <div class="time-slots">
+            <div class="time-slot">
+                <div class="time-slot-icon">🌅</div>
+                <div class="time-slot-name">Breakfast</div>
+                <div class="time-slot-time">7:00 AM - 10:00 AM</div>
+            </div>
+            <div class="time-slot">
+                <div class="time-slot-icon">☀️</div>
+                <div class="time-slot-name">Lunch</div>
+                <div class="time-slot-time">12:00 PM - 3:00 PM</div>
+            </div>
+            <div class="time-slot">
+                <div class="time-slot-icon">🌙</div>
+                <div class="time-slot-name">Dinner</div>
+                <div class="time-slot-time">6:00 PM - 9:00 PM</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <i class="bi bi-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="bi bi-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="checkout.html" class="nav-item">
+            <i class="bi bi-bag"></i>
+            <span>Orders</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="bi bi-chat-dots"></i>
+            <span>Support</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script type="module">
+        import { API_BASE_URL } from './js/config.js';
+
+        // Get plan from URL if coming from carousel
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectedPlan = urlParams.get('plan');
+
+        if (preselectedPlan) {
+            // Scroll to the selected plan
+            const planCards = document.querySelectorAll('.plan-card');
+            const planIndex = preselectedPlan === 'basic' ? 0 : preselectedPlan === 'standard' ? 1 : 2;
+            if (planCards[planIndex]) {
+                planCards[planIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                planCards[planIndex].style.border = '2px solid #FF6B00';
+            }
+        }
+
+        window.selectPlan = function(plan) {
+            // Check if user is logged in
+            const token = localStorage.getItem('eventToken');
+            const user = JSON.parse(localStorage.getItem('eventUser') || '{}');
+
+            if (!token && !user.email) {
+                // Not logged in, redirect to signup
+                if (confirm('You need to sign in to subscribe to a meal plan. Would you like to create an account?')) {
+                    window.location.href = 'signup.html';
+                }
+                return;
+            }
+
+            // Get plan details
+            const planDetails = {
+                basic: { name: 'Basic Plan', price: 25000, description: 'Breakfast & Lunch (Mon-Fri)' },
+                standard: { name: 'Standard Plan', price: 50000, description: 'All 3 meals daily (7 days)' },
+                premium: { name: 'Premium Plan', price: 75000, description: 'Gourmet meals + snacks' }
+            };
+
+            const selected = planDetails[plan];
+
+            if (confirm(`Subscribe to ${selected.name} for ₦${selected.price.toLocaleString()}/month?\n\n${selected.description}`)) {
+                // Proceed with subscription (integrate with Paystack)
+                initiateSubscription(plan, selected);
+            }
+        }
+
+        async function initiateSubscription(plan, details) {
+            try {
+                const token = localStorage.getItem('eventToken');
+                const user = JSON.parse(localStorage.getItem('eventUser') || '{}');
+
+                // Integrate with Paystack for subscription payment
+                const response = await fetch(`${API_BASE_URL}/api/subscription/initialize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        plan,
+                        amount: details.price * 100, // Convert to kobo
+                        email: user.email
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.authorization_url) {
+                    // Redirect to Paystack payment page
+                    window.location.href = data.authorization_url;
+                } else {
+                    alert('Failed to initialize subscription. Please try again.');
+                }
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        }
+    </script>
+
+<audio id="readySound" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="deliveredSound" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+</body>
+</html>
+
+

@@ -31,13 +31,17 @@ const PendingOrderSchema = new mongoose.Schema({
   packagingNotes: String,
   distanceKm: Number,
   
-  // Payment tracking
-  paymentReference: { type: String, required: true, unique: true },
+  // Payment tracking (non-unique to support multi-vendor orders sharing one reference)
+  paymentReference: { type: String, required: true, index: true },
   paymentStatus: { 
     type: String, 
     enum: ['pending', 'paid', 'failed', 'cancelled'],
     default: 'pending'
   },
+  
+  // 🆕 Multi-vendor order support
+  orderGroupId: { type: String, index: true },  // Links orders from same checkout
+  isMultiVendor: { type: Boolean, default: false }, // Flag for multi-vendor orders
   
   // Expiration (pending orders expire after 1 hour)
   expiresAt: { 

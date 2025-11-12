@@ -254,3 +254,22 @@ export const createWithdrawal = async (req, res) => {
     res.status(500).json({ error: 'Failed to create withdrawal' })
   }
 }
+// -----------------------------
+// Admin: Fetch all orders with vendor & consumer details
+// GET /api/admin/orders
+// -----------------------------
+export const listOrders = async (req, res) => {
+  try {
+    console.log("📦 [ADMIN] Fetching all orders...");
+    const orders = await Order.find()
+      .populate('vendorId', 'storeName businessAddress phone')
+      .populate('consumerId', 'name email phone')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, orders });
+  } catch (err) {
+    console.error('🔥 admin.listOrders error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch admin orders', details: err.message });
+  }
+};

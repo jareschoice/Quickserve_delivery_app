@@ -8,7 +8,7 @@ node server.js
 
 Env keys (create `.env`):
 ```
-PORT=5000
+PORT=5555
 MONGO_URI=...
 EMAIL_HOST=mail.getquickserves.com
 EMAIL_PORT=465
@@ -24,5 +24,5 @@ COMMISSION_VENDOR=50
 COMMISSION_RIDER=50
 JWT_SECRET=supersecret_quickserve
 JWT_EXPIRES=7d
-APP_BASE_URL=http://localhost:5000
+APP_BASE_URL=http://localhost:5555
 ```

@@ -7,6 +7,7 @@ const ProfileSchema = new mongoose.Schema({
   // flexible per role
   phone: String,
   address: String,
+  seatNumber: String, // For event attendees
 
   // Vendor
   businessName: String,
@@ -24,7 +25,7 @@ const UserSchema = new mongoose.Schema({
   // ✅ Role-based access
   role: {
     type: String,
-    enum: ['customer', 'vendor', 'rider', 'admin'],
+    enum: ['customer', 'vendor', 'rider', 'admin', 'dispatcher'],
     required: true,
     index: true
   },
@@ -42,7 +43,17 @@ const UserSchema = new mongoose.Schema({
   otp: { type: String },
   otpExpires: { type: Date },
 
+  // Password reset tokens
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
+
   profile: ProfileSchema,
+
+  // Unique ID fields for vendors and dispatchers
+  dispatcherId: { type: String, sparse: true, unique: true, index: true }, // DIS-0001, DIS-0002, etc.
+  
+  // Status flags
+  isActive: { type: Boolean, default: true },
 
   // Wallet and finance
   wallet: { type: Number, default: 0 },

@@ -133,18 +133,97 @@ export const setNotificationPref = async (req, res) => {
 // =====================================
 export const createVendor = async (req, res) => {
   try {
-    const { storeName, userId } = req.body
-    const u = await User.findById(userId)
-    if (!u) return res.status(404).json({ error: 'User not found' })
+    console.log('🔥 createVendor called with body:', req.body);
+    
+    const { 
+      businessName, 
+      contactPerson, 
+      email, 
+      phone, 
+      password, 
+      category, 
+      minimumOrder, 
+      address, 
+      location, 
+      description,
+      // Legacy support
+      storeName, 
+      userId 
+    } = req.body;
 
-    const existing = await Vendor.findOne({ user: u._id })
-    if (existing) return res.status(409).json({ error: 'Vendor already exists' })
+    // NEW: Admin registration with complete user creation
+    if (businessName && email && password) {
+      console.log('📝 Creating new vendor user and profile...');
+      
+      // Check if user exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({ error: 'Email already in use' });
+      }
 
-    const v = await Vendor.create({ user: u._id, storeName })
-    res.json({ success: true, vendor: v })
+      // Create User account
+      const user = await User.create({
+        role: 'vendor',
+        name: contactPerson || businessName,
+        email,
+        password, // Will be hashed by User model pre-save hook
+        isVerified: true, // Admin-created vendors are auto-verified
+        phone,
+        profile: {
+          businessName,
+          phone,
+          address,
+          location
+        }
+      });
+
+      console.log('✅ User created:', user._id);
+
+      // Create Vendor profile
+      const vendor = await Vendor.create({
+        user: user._id,
+        storeName: businessName,
+        description: description || '',
+        category: category || 'General',
+        businessAddress: address,
+        phone: phone,
+        minimumOrder: minimumOrder || 0,
+        location: location
+      });
+
+      console.log('✅ Vendor profile created:', vendor._id);
+
+      return res.status(201).json({ 
+        success: true, 
+        message: 'Vendor registered successfully',
+        vendor,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+
+    // LEGACY: Support old format (userId + storeName)
+    if (userId && storeName) {
+      console.log('📝 Using legacy format: userId + storeName');
+      const u = await User.findById(userId);
+      if (!u) return res.status(404).json({ error: 'User not found' });
+
+      const existing = await Vendor.findOne({ user: u._id });
+      if (existing) return res.status(409).json({ error: 'Vendor already exists' });
+
+      const v = await Vendor.create({ user: u._id, storeName });
+      return res.json({ success: true, vendor: v });
+    }
+
+    return res.status(400).json({ error: 'Missing required fields' });
+    
   } catch (e) {
-    console.error('createVendor error', e)
-    res.status(500).json({ error: 'Failed to create vendor account' })
+    console.error('❌ createVendor error:', e);
+    res.status(500).json({ error: 'Failed to create vendor account', detail: e.message });
   }
 }
 

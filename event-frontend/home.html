@@ -1,0 +1,300 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickServe - Fast Food Delivery & Services</title>
+
+  <!-- ✅ Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <!-- ✅ LOCAL CSS (use absolute /event-frontend paths) -->
+  <link rel="stylesheet" href="/event-frontend/css/styles.css">
+  <link rel="stylesheet" href="/event-frontend/css/web-shared.css">
+  <link rel="stylesheet" href="/event-frontend/css/home-style.css">
+  <link rel="stylesheet" href="/event-frontend/css/chat-widget.css">
+
+  <!-- ✅ Audio -->
+  <audio id="soundReady" src="/event-frontend/audio/ready.mp3" preload="auto"></audio>
+  <audio id="soundDelivered" src="/event-frontend/audio/delivered.mp3" preload="auto"></audio>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="home.html">
+                <div class="logo-circle">Q</div>
+                <span class="brand-text">QuickServe</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="home.html"><i class="bi bi-house-fill"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="restaurants.html"><i class="bi bi-shop"></i> Restaurants</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shops.html"><i class="bi bi-basket"></i> Shops</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-open-chat><i class="bi bi-chat-dots"></i> Support</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-outline-primary rounded-pill px-4" href="checkout.html">
+                            <i class="bi bi-bag"></i> Cart <span class="badge bg-primary ms-1" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-primary rounded-pill px-4" href="profile.html">
+                            <i class="bi bi-person-circle"></i> Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="location-badge mb-3">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span id="currentLocation">Ilorin</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <h1 class="hero-title mb-3">Order Food & Essentials Delivered to You</h1>
+                    <p class="hero-subtitle mb-4">Fast delivery from your favorite restaurants, shops, and pharmacies. Get everything you need in minutes!</p>
+                    <div class="hero-stats d-flex gap-4 mb-4">
+                        <div>
+                            <h3 class="stat-number">500+</h3>
+                            <p class="stat-label">Vendors</p>
+                        </div>
+                        <div>
+                            <h3 class="stat-number">10K+</h3>
+                            <p class="stat-label">Happy Customers</p>
+                        </div>
+                        <div>
+                            <h3 class="stat-number">15min</h3>
+                            <p class="stat-label">Avg. Delivery</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <!-- Promo Banners (auto-rotate) -->
+                    <div class="promo-banners">
+                        <div class="promo-banner active" id="promoSpecial" role="button" tabindex="0" aria-label="QuickServe special meal">
+                            <div>
+                                <div class="banner-title">QuickServe<br>Special Meal</div>
+                                <div class="banner-price">₦2,200 <span class="small-note">Only</span></div>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300" alt="Food" class="banner-image">
+                        </div>
+                        <div class="promo-banner promo-zaddy" id="promoZaddy" role="button" tabindex="0" aria-label="Zaddy's Creamery">
+                            <div>
+                                <div class="banner-title">Zaddy's Creamery</div>
+                                <div class="banner-price">Try our Ice Cream</div>
+                            </div>
+                            <img src="images/zaddys-creamery.png" alt="Zaddy's Creamery" class="banner-image" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=300'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories-section py-5">
+        <div class="container">
+            <h2 class="section-title text-center mb-4">What would you like to order?</h2>
+            <div class="categories-grid">
+                <div class="category-card" data-link="restaurants.html">
+                    <i class="bi bi-shop category-icon"></i>
+                    <div class="category-name">Restaurants</div>
+                    <p class="category-desc">Food & Drinks</p>
+                </div>
+                <div class="category-card" data-link="shops.html">
+                    <i class="bi bi-basket category-icon"></i>
+                    <div class="category-name">Shops</div>
+                    <p class="category-desc">Groceries & More</p>
+                </div>
+                <div class="category-card" data-link="pharmacies.html">
+                    <i class="bi bi-capsule category-icon"></i>
+                    <div class="category-name">Pharmacies</div>
+                    <p class="category-desc">Medicines & Health</p>
+                </div>
+                <div class="category-card" data-link="send-packages.html">
+                    <i class="bi bi-box-seam category-icon"></i>
+                    <div class="category-name">Send Packages</div>
+                    <p class="category-desc">Quick Delivery</p>
+                </div>
+                <div class="category-card" data-link="markets.html">
+                    <i class="bi bi-basket2 category-icon"></i>
+                    <div class="category-name">Local Markets</div>
+                    <p class="category-desc">Fresh Produce</p>
+                </div>
+                <div class="category-card" data-link="home.html#more">
+                    <i class="bi bi-grid-3x3 category-icon"></i>
+                    <div class="category-name">More</div>
+                    <p class="category-desc">Explore All</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Explore Vendors Section -->
+    <section class="explore-section py-5 bg-light">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">Popular Vendors</h2>
+                <a href="restaurants.html" class="btn btn-link text-primary">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="explore-scroll" id="exploreVendors">
+                <p class="muted-note">Loading vendors...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Section -->
+    <section class="featured-section py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">Featured Deals ⭐</h2>
+                <a href="#" class="btn btn-link text-primary">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="featured-scroll" id="featuredVendors">
+                <p class="muted-note">Loading...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Food Court Section -->
+    <section class="food-court-section py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title text-center mb-4">Food Court Specials</h2>
+            <div id="productFeed" class="row g-4"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="logo-circle me-2">Q</div>
+                        <span class="brand-text fs-4">QuickServe</span>
+                    </div>
+                    <p class="text-muted">Fast delivery from your favorite restaurants, shops, and pharmacies.</p>
+                </div>
+                <div class="col-lg-2 col-6 mb-4">
+                    <h5>Company</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted">About Us</a></li>
+                        <li><a href="#" class="text-muted">Careers</a></li>
+                        <li><a href="#" class="text-muted">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-6 mb-4">
+                    <h5>Services</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="restaurants.html" class="text-muted">Restaurants</a></li>
+                        <li><a href="shops.html" class="text-muted">Shops</a></li>
+                        <li><a href="pharmacies.html" class="text-muted">Pharmacies</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-6 mb-4">
+                    <h5>Help</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted">FAQ</a></li>
+                        <li><a href="#" data-open-chat class="text-muted">Support</a></li>
+                        <li><a href="#" class="text-muted">Terms</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-6 mb-4">
+                    <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-muted me-3"><i class="bi bi-facebook fs-4"></i></a>
+                        <a href="#" class="text-muted me-3"><i class="bi bi-twitter fs-4"></i></a>
+                        <a href="#" class="text-muted"><i class="bi bi-instagram fs-4"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center text-muted">
+                <p class="mb-0">&copy; 2025 QuickServe. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bottom Navigation (Mobile Only) -->
+    <div class="bottom-nav">
+        <a href="home.html" class="nav-item active">
+            <i class="bi bi-house-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="bi bi-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="checkout.html" class="nav-item">
+            <i class="bi bi-bag"></i>
+            <span>Orders</span>
+            <span class="nav-badge" id="navCartCount" style="display: none;">0</span>
+        </a>
+        <a href="#" class="nav-item" data-open-chat>
+            <i class="bi bi-chat-dots"></i>
+            <span>Support</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <!-- ✅ Bootstrap Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ Local JS -->
+<!-- ✅ Bootstrap Core -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ Core Config + Sockets -->
+<script type="module" src="js/env-config.js"></script>
+<script type="module" src="js/socket-client.js"></script>
+<script type="module" src="js/config.js"></script>
+
+<!-- ✅ Functional JS -->
+<script type="module" src="js/public-banner.js"></script>
+<script type="module" src="js/chat-widget.js"></script>
+<script type="module" src="js/home.js"></script>
+<script type="module" src="js/realtime.js"></script>
+
+<!-- ✅ Socket.IO Client -->
+<script src="/socket.io/socket.io.js"></script>
+<!-- ✅ Audio: moved to bottom for proper playback -->
+<audio id="audioReady" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="audioDelivered" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const readySound = document.getElementById("audioReady");
+  const deliveredSound = document.getElementById("audioDelivered");
+
+  // Ensure range requests succeed (after 416 fix in backend)
+  fetch(readySound.src, { method: "HEAD" }).catch(() => {});
+  fetch(deliveredSound.src, { method: "HEAD" }).catch(() => {});
+
+  console.log("🎵 Audio initialized successfully.");
+});
+</script>
+</body>
+</html>

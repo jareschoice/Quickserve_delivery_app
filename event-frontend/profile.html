@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - QuickServe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/chat-widget.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            padding-bottom: 80px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+            color: white;
+            padding: 60px 24px 40px;
+            text-align: center;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 40px;
+            font-weight: 700;
+            color: #FF6B00;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .menu-section {
+            background: white;
+            margin: 16px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .menu-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:active {
+            background: #f8f9fa;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .menu-icon.green { background: #FFE8D6; color: #FF6B00; }
+        .menu-icon.blue { background: #e6f2ff; color: #0066cc; }
+        .menu-icon.orange { background: #fff3e6; color: #ff9933; }
+        .menu-icon.red { background: #ffe6e6; color: #cc0000; }
+        .menu-icon.purple { background: #f3e6ff; color: #9933ff; }
+
+        .menu-content {
+            flex: 1;
+        }
+
+        .menu-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+
+        .menu-subtitle {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .menu-arrow {
+            color: #ccc;
+            font-size: 18px;
+        }
+
+        .guest-card {
+            background: white;
+            margin: 16px;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .guest-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            color: #FF6B00;
+        }
+
+        .guest-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .guest-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary-custom {
+            background: #FF6B00;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-secondary-custom {
+            background: #f0f0f0;
+            color: #1a1a1a;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .logout-btn {
+            background: #ffe6e6;
+            color: #cc0000;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            width: calc(100% - 32px);
+            margin: 16px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 8px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #999;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 8px 12px;
+        }
+
+        .nav-item.active {
+            color: #FF6B00;
+        }
+
+        .nav-item i {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logged In View -->
+    <div id="loggedInView" class="hidden">
+        <div class="profile-header">
+            <div class="profile-avatar-large" id="userAvatar">
+                <i class="bi bi-person"></i>
+            </div>
+            <div class="profile-name" id="userName">Guest User</div>
+            <div class="profile-email" id="userEmail"></div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-item" onclick="viewOrders()">
+                <div class="menu-icon green">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+                <div class="menu-content">
+                    <div class="menu-title">My Orders</div>
+                    <div class="menu-subtitle">View order history</div>
+                </div>
+                <i class="bi bi-chevron-right menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="editProfile()">
+                <div class="menu-icon blue">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="menu-content">
+                    <div class="menu-title">Edit Profile</div>
+                    <div class="menu-subtitle">Update your information</div>
+                </div>
+                <i class="bi bi-chevron-right menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="becomeVendor()">
+                <div class="menu-icon purple">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div class="menu-content">
+                    <div class="menu-title">Become a Vendor</div>
+                    <div class="menu-subtitle">Register your business</div>
+                </div>
+                <i class="bi bi-chevron-right menu-arrow"></i>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-item" onclick="viewSeatInfo()">
+                <div class="menu-icon purple">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+                <div class="menu-content">
+                    <div class="menu-title">My Seat</div>
+                    <div class="menu-subtitle" id="userSeat">Not set</div>
+                </div>
+                <i class="bi bi-chevron-right menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="contactSupport()">
+                <div class="menu-icon orange">
+                    <i class="bi bi-headset"></i>
+                </div>
+                <div class="menu-content">
+                    <div class="menu-title">Support</div>
+                    <div class="menu-subtitle">Get help</div>
+                </div>
+                <i class="bi bi-chevron-right menu-arrow"></i>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+        </button>
+    </div>
+
+    <!-- Guest View -->
+    <div id="guestView" class="hidden">
+        <div class="profile-header">
+            <div class="profile-avatar-large">
+                <i class="bi bi-person"></i>
+            </div>
+            <div class="profile-name">Welcome!</div>
+            <div class="profile-email">Sign in to unlock more features</div>
+        </div>
+
+        <div class="guest-card">
+            <div class="guest-icon">🎉</div>
+            <div class="guest-title">Join QuickServe Event</div>
+            <div class="guest-text">
+                Create an account to save your orders, track deliveries, and enjoy faster checkout
+            </div>
+            <button class="btn-primary-custom" onclick="showSignUp()">
+                Create Account
+            </button>
+            <button class="btn-secondary-custom" onclick="showSignIn()">
+                Sign In
+            </button>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-item" onclick="continueAsGuest()">
+                <div class="menu-icon green">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </div>
+                <div class="menu-content">
+                    <div class="menu-title">Continue as Guest</div>
+                    <div class="menu-subtitle">Browse and order without signing in</div>
+                </div>
+                <i class="bi bi-chevron-right menu-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <i class="bi bi-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="bi bi-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="checkout.html" class="nav-item">
+            <i class="bi bi-bag"></i>
+            <span>Orders</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="bi bi-chat-dots"></i>
+            <span>Support</span>
+        </a>
+        <a href="profile.html" class="nav-item active">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script type="module" src="js/chat-widget.js"></script>
+    <script type="module" src="js/public-banner.js"></script>
+    <script type="module">
+        import { API_BASE_URL } from './js/config.js';
+
+        // Check authentication status on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        async function checkAuth() {
+            // Check for token (auto-login)
+            const token = localStorage.getItem('eventToken');
+            
+            if (token) {
+                // Verify token with backend
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Token is valid, show logged in view
+                        showLoggedInView(data.user);
+                        return;
+                    } else {
+                        // Token invalid, clear it
+                        localStorage.removeItem('eventToken');
+                        localStorage.removeItem('eventUser');
+                    }
+                } catch (error) {
+                    console.error('Auth check error:', error);
+                    localStorage.removeItem('eventToken');
+                    localStorage.removeItem('eventUser');
+                }
+            }
+
+            // Fallback: check localStorage for user (legacy)
+            const user = JSON.parse(localStorage.getItem('eventUser') || '{}');
+            
+            if (user.name && user.email) {
+                // User is logged in
+                showLoggedInView(user);
+            } else {
+                // User is guest
+                showGuestView();
+            }
+        }
+
+        function showLoggedInView(user) {
+            document.getElementById('loggedInView').style.display = 'block';
+            document.getElementById('guestView').style.display = 'none';
+
+            // Set user info
+            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            
+            if (user.seatNumber) {
+                document.getElementById('userSeat').textContent = user.seatNumber;
+            }
+        }
+
+        function showGuestView() {
+            document.getElementById('loggedInView').style.display = 'none';
+            document.getElementById('guestView').style.display = 'block';
+        }
+
+        // Navigation functions
+        window.showSignUp = function() {
+            window.location.href = 'signup.html';
+        }
+
+        window.showSignIn = function() {
+            window.location.href = 'signin.html';
+        }
+
+        window.continueAsGuest = function() {
+            localStorage.setItem('guestMode', 'true');
+            window.location.href = 'home.html';
+        }
+
+        window.viewOrders = function() {
+            window.location.href = 'my-orders.html';
+        }
+
+        window.editProfile = function() {
+            window.location.href = 'edit-profile.html';
+        }
+
+        window.becomeVendor = function() {
+            // Check if admin, redirect to admin page; otherwise show signup info
+            const user = JSON.parse(localStorage.getItem('eventUser') || '{}');
+            if (user.role === 'admin') {
+                window.location.href = 'admin-register-vendor.html';
+            } else {
+                alert('To become a vendor, please contact our support team or sign up through the vendor portal.');
+                // Could redirect to a vendor signup page
+                // window.location.href = 'vendor-signup.html';
+            }
+        }
+
+        window.viewSeatInfo = function() {
+            const user = JSON.parse(localStorage.getItem('eventUser') || '{}');
+            if (user.seatNumber) {
+                alert(`Your seat: ${user.seatNumber}`);
+            } else {
+                const seat = prompt('Enter your seat number:');
+                if (seat) {
+                    user.seatNumber = seat;
+                    localStorage.setItem('eventUser', JSON.stringify(user));
+                    document.getElementById('userSeat').textContent = seat;
+                }
+            }
+        }
+
+        window.contactSupport = function() {
+            if (window.QuickServeChat && typeof window.QuickServeChat.open === 'function') {
+                window.QuickServeChat.open();
+            } else {
+                alert('Opening chat…');
+            }
+        }
+
+        window.logout = function() {
+            if (confirm('Are you sure you want to sign out?')) {
+                localStorage.removeItem('eventUser');
+                localStorage.removeItem('eventToken');
+                window.location.reload();
+            }
+        }
+    </script>
+
+<audio id="readySound" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="deliveredSound" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+</body>
+</html>
+
+

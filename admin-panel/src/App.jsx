@@ -7,6 +7,7 @@ import Vendors from './pages/Vendors'
 import Orders from './pages/Orders'
 import Payments from './pages/Payments'
 import Riders from './pages/Riders'
+import Dispatchers from './pages/Dispatchers'
 import Subscriptions from './pages/Subscriptions'
 import Settings from './pages/Settings'
 import Layout from './components/Layout'
@@ -58,6 +59,7 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="payments" element={<Payments />} />
           <Route path="riders" element={<Riders />} />
+          <Route path="dispatchers" element={<Dispatchers />} />
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="settings" element={<Settings />} />
         </Route>

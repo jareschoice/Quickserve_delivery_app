@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickServe Admin Dashboard</title>
+
+  <!-- ✅ Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+  <!-- ✅ Shared Styles -->
+  <link rel="stylesheet" href="/event-frontend/css/styles.css" />
+  <link rel="stylesheet" href="/event-frontend/css/web-shared.css" />
+  <link rel="stylesheet" href="/event-frontend/css/chat-widget.css" />
+
+  <style>
+    :root {
+      --quickserve-orange: #ff6b00;
+      --quickserve-gold: #ffd700;
+      --quickserve-gradient: linear-gradient(135deg, #ff6b00, #ffd700);
+    }
+
+    body {
+      background-color: #f8f9fa;
+      font-family: "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 260px;
+      background: white;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      background: var(--quickserve-gradient);
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .logo-q {
+      width: 60px;
+      height: 60px;
+      background: var(--quickserve-gold);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--quickserve-orange);
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-item {
+      padding: 12px 20px;
+      color: #333;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s;
+      border-left: 4px solid transparent;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+      background: #ffe8d6;
+      color: var(--quickserve-orange);
+      border-left-color: var(--quickserve-orange);
+      font-weight: 600;
+    }
+
+    .sidebar-item i {
+      font-size: 20px;
+      width: 24px;
+    }
+
+    .main-content {
+      margin-left: 260px;
+      padding: 30px;
+    }
+
+    .top-bar {
+      background: white;
+      padding: 20px 30px;
+      margin: -30px -30px 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .quick-action-btn {
+      background: var(--quickserve-gradient);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s;
+    }
+
+    .quick-action-btn:hover {
+      transform: scale(1.05);
+      color: white;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .stat-icon.orange { background: #ffe8d6; color: var(--quickserve-orange); }
+    .stat-icon.gold { background: #fff9e6; color: var(--quickserve-gold); }
+    .stat-icon.green { background: #e8f5e9; color: #4caf50; }
+    .stat-icon.blue { background: #e3f2fd; color: #2196f3; }
+  </style>
+  <!-- ✅ Audio -->
+  <audio id="soundReady" src="/event-frontend/audio/ready.mp3" preload="auto"></audio>
+  <audio id="soundDelivered" src="/event-frontend/audio/delivered.mp3" preload="auto"></audio>
+</head>
+<body class="admin-wide">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-q">Q</div>
+      <h5 class="mb-0">QuickServe Admin</h5>
+      <small>Control Panel</small>
+    </div>
+
+    <div class="sidebar-menu">
+      <a href="admin.html" class="sidebar-item active">
+        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+      </a>
+      <a href="admin-register-vendor.html" class="sidebar-item">
+        <i class="bi bi-shop"></i><span>Register Vendor</span>
+      </a>
+      <a href="admin-register-dispatcher.html" class="sidebar-item">
+        <i class="bi bi-bicycle"></i><span>Register Dispatcher</span>
+      </a>
+      <a href="admin-products.html" class="sidebar-item">
+        <i class="bi bi-box-seam"></i><span>Manage Products</span>
+      </a>
+      <a href="admin-vendors.html" class="sidebar-item">
+        <i class="bi bi-people"></i><span>Manage Vendors</span>
+      </a>
+      <a href="#ordersSection" class="sidebar-item">
+        <i class="bi bi-receipt"></i><span>View Orders</span>
+      </a>
+      <hr class="my-3">
+      <a href="index.html" class="sidebar-item">
+        <i class="bi bi-house-door"></i><span>Customer View</span>
+      </a>
+      <a href="login.html" class="sidebar-item text-danger">
+        <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="top-bar">
+      <div>
+        <h3 class="mb-0">Dashboard Overview</h3>
+        <small class="text-muted">Welcome back, Admin</small>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="admin-register-vendor.html" class="quick-action-btn">
+          <i class="bi bi-plus-circle"></i> Register Vendor
+        </a>
+        <a href="admin-register-dispatcher.html" class="quick-action-btn">
+          <i class="bi bi-bicycle"></i> Register Dispatcher
+        </a>
+      </div>
+    </div>
+
+                </a>
+                <a href="admin-products.html" class="quick-action-btn ms-2">
+                    <i class="bi bi-upload"></i>
+                    Add Products
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div class="stat-value" id="totalOrders">0</div>
+                    <div class="stat-label">Total Orders Today</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon gold">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div class="stat-value" id="totalRevenue">₦0</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                    <div class="stat-value" id="activeVendors">0</div>
+                    <div class="stat-label">Active Vendors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="bi bi-bicycle"></i>
+                    </div>
+                    <div class="stat-value" id="activeDispatchers">0</div>
+                    <div class="stat-label">Active Dispatchers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time Monitoring -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="bi bi-cart"></i>
+                    </div>
+                    <div class="stat-value" id="totalOrdersAll">0</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div class="stat-value" id="totalEarnings">₦0</div>
+                    <div class="stat-label">Total Earnings</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="stat-value" id="activeUsers">0</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Vendor Order Groups Monitoring -->
+        <div class="card mb-4">
+            <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #FF6B00, #FFD700);">
+                <h5 class="mb-0 text-white">
+                    <i class="bi bi-cart-check"></i> Multi-Vendor Order Groups
+                    <span class="badge bg-light text-dark ms-2" id="multiVendorCount">0</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="multi-vendor-groups">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <p class="mt-3 text-muted">Loading multi-vendor orders...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online Users Monitoring -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-shop"></i> Online Vendors
+                            <span class="badge bg-light text-success ms-2" id="onlineVendorsCount">0</span>
+                        </h6>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        <div id="online-vendors">
+                            <p class="text-muted small">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-bicycle"></i> Online Dispatchers
+                            <span class="badge bg-light text-info ms-2" id="onlineDispatchersCount">0</span>
+                        </h6>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        <div id="online-dispatchers">
+                            <p class="text-muted small">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Orders Section -->
+        <div class="table-container mb-4" id="ordersSection">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Live Orders
+                </h5>
+                <span class="badge bg-success">
+                    <i class="bi bi-arrow-clockwise"></i> Auto-refresh: 10s
+                </span>
+            </div>
+            <div id="live-orders">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status"></div>
+                    <p class="mt-3 text-muted">Loading orders...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vendor Earnings -->
+        <div class="table-container mb-4">
+            <h5 class="mb-3">
+                <i class="bi bi-graph-up-arrow"></i> Vendor Earnings
+            </h5>
+            <div id="vendor-earnings">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status"></div>
+                    <p class="mt-3 text-muted">Loading earnings...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Charges -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-coin"></i> Service Charges
+                    </h5>
+                    <div class="stat-value text-success" id="service-charge-total">₦0</div>
+                    <div class="stat-label">Total Collected</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-pie-chart"></i> Quick Stats
+                    </h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Pending Orders:</span>
+                        <strong id="pendingCount">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivered Today:</span>
+                        <strong id="deliveredCount">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Success Rate:</span>
+                        <strong id="successRate">0%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Centralized Chat System (Admin) -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Centralized Chat</h5>
+                <span class="badge bg-primary" id="chatTotalUnread">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="row g-0" style="min-height:380px">
+                    <div class="col-md-4 border-end">
+                        <div class="list-group list-group-flush" id="chatList" style="max-height:380px; overflow:auto">
+                            <div class="p-3 text-muted small">No conversations yet</div>
+                        </div>
+                    </div>
+                    <div class="col-md-8 d-flex flex-column">
+                        <div class="p-2 border-bottom fw-semibold">QUICKSERVE</div>
+                        <div class="flex-grow-1 p-2" id="chatMessages" style="overflow:auto"></div>
+                        <div class="p-2 border-top">
+                            <input id="chatInput" type="text" class="form-control" placeholder="Reply… (Enter to send)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- ✅ Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/auth-guard.js"></script>
+  <script type="module">
+    import { requireAuth } from 'js/auth-guard.js';
+    requireAuth('admin');
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io(window.location.protocol + "//" + window.location.hostname + ":5555");
+    socket.on("connect", () => console.log("🟢 Socket connected:", socket.id));
+    socket.on("disconnect", () => console.log("🔴 Socket disconnected"));
+  </script>
+  <script type="module" src="js/socket.js"></script>
+  <script type="module" src="js/admin.js"></script>
+  <script type="module" src="js/chat-widget.js"></script>
+<audio id="readySound" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="deliveredSound" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+</body>
+</html>
+

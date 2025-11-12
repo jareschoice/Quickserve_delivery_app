@@ -5,16 +5,26 @@ import mongoose from "mongoose";
 
 const NotificationSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     message: { type: String, required: true },
     type: {
       type: String,
-      enum: ["order", "wallet", "refund", "system", "support", "kyc", "rider", "admin"],
+      enum: [
+        "order",
+        "wallet",
+        "refund",
+        "system",
+        "support",
+        "kyc",
+        "rider",
+        "admin",
+      ],
       default: "system",
     },
     read: { type: Boolean, default: false },
-    meta: { type: Object },
+    readAt: { type: Date },
+    meta: { type: Object, default: {} },
   },
   { timestamps: true }
 );

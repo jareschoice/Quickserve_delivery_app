@@ -6,6 +6,7 @@ import {
   Package, 
   CreditCard, 
   Bike,
+  Truck,
   Calendar,
   Settings, 
   LogOut 
@@ -28,6 +29,7 @@ const Layout = ({ setIsAuthenticated }) => {
     { path: '/orders', icon: Package, label: 'Orders' },
     { path: '/payments', icon: CreditCard, label: 'Payments' },
     { path: '/riders', icon: Bike, label: 'Riders' },
+    { path: '/dispatchers', icon: Truck, label: 'Dispatchers' },
     { path: '/subscriptions', icon: Calendar, label: 'Special Meals' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ]

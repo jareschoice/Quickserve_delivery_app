@@ -16,6 +16,8 @@ import kycRoutes from "./routes/kyc.routes.js";
 import vendorRoutes from "./routes/vendor.routes.js";
 import riderRoutes from "./routes/rider.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import eventRoutes from "./routes/event.routes.js";
+import adminProductRoutes from "./routes/adminProduct.routes.js";
 
 dotenv.config();
 
@@ -41,6 +43,11 @@ app.use("/api/riders", riderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/kyc", kycRoutes);
+app.use("/api/event", eventRoutes);
+app.use("/api/admin", adminProductRoutes);
+
+// Serve static files for uploaded images
+app.use('/uploads', express.static('public/uploads'));
 
 // Start
 const PORT = process.env.PORT || 5000;

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickServe - Dispatcher Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/chat-widget.css">
+    <!-- Leaflet map CSS (no API key required) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        body {
+            background-color: #f5f7fa;
+        }
+        .admin-navbar {
+            background: linear-gradient(135deg, #FF6B00, #FF8C00);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .logo-q-small {
+            width: 40px;
+            height: 40px;
+            background: #FFD700;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF6B00;
+            margin-right: 10px;
+        }
+        .order-card {
+            border-left: 4px solid #28a745;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark admin-navbar">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="dispatcher.html">
+                <span class="logo-q-small">Q</span>
+                <strong>QuickServe Dispatcher</strong>
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="position-relative">
+                    <button id="notifBtn" class="btn btn-light btn-sm position-relative">
+                        <i class="bi bi-bell"></i>
+                        <span id="notifCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                    </button>
+                    <div id="notifDropdown" class="dropdown-menu dropdown-menu-end" style="display: none; position: absolute; right: 0; min-width: 300px; max-height: 400px; overflow-y: auto;">
+                        <div class="dropdown-header">Notifications</div>
+                        <div id="notifList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">
+            <i class="bi bi-bicycle"></i> Dispatcher Dashboard
+        </h1>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-muted">Total Earnings</div>
+                                <div id="rider-earnings" class="h4 mb-0">₦0</div>
+                            </div>
+                            <i class="bi bi-cash-stack fs-2 text-success"></i>
+                        </div>
+                        <div class="mt-2 small text-muted">Service charge per delivered order</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-muted">Delivered</div>
+                                <div id="rider-delivered" class="h4 mb-0">0</div>
+                            </div>
+                            <i class="bi bi-check2-circle fs-2 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-muted">Active</div>
+                                <div id="rider-active" class="h4 mb-0">0</div>
+                            </div>
+                            <i class="bi bi-truck fs-2 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> <strong>Note:</strong> This page auto-refreshes every 15 seconds to show new orders
+        </div>
+
+        <h2 class="mb-3">
+            <i class="bi bi-bag-check"></i> Ready for Pickup
+        </h2>
+        <div id="ready-orders" class="list-group mb-4">
+            <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status"></div>
+                <p class="mt-2">Loading orders...</p>
+            </div>
+        </div>
+
+        <!-- Order Table with Actions -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Vendor</th>
+                        <th>Seat Number</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTable">
+                    <!-- Orders will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+
+    <!-- Live Map Tracking -->
+    <div id="map" class="map"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script type="module">import { requireAuth } from './js/auth-guard.js'; requireAuth('dispatcher');</script>
+    <script type="module" src="js/dispatcher.js"></script>
+    <script type="module" src="js/chat-widget.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Live Wallet Updates -->
+    <script>
+        const socket = io(); // Initialize Socket.IO
+
+        // Update wallet earnings in real-time
+        socket.on('wallet:update', (wallet) => {
+            document.getElementById('rider-earnings').textContent = `₦${wallet.earnings.toFixed(2)}`;
+        });
+
+        // Update delivered orders count
+        socket.on('orders:delivered', (count) => {
+            document.getElementById('rider-delivered').textContent = count;
+        });
+
+        // Update active orders count
+        socket.on('orders:active', (count) => {
+            document.getElementById('rider-active').textContent = count;
+        });
+    </script>
+
+    <!-- Populate orders dynamically -->
+    <script>
+        socket.on('orders:ready', (orders) => {
+            const orderTable = document.getElementById('orderTable');
+            orderTable.innerHTML = '';
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.vendor}</td>
+                    <td>${order.seat}</td>
+                    <td>₦${order.amount}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm">Accept</button>
+                        <button class="btn btn-warning btn-sm">In Transit</button>
+                        <button class="btn btn-primary btn-sm">Arrived</button>
+                        <button class="btn btn-info btn-sm">Scan QR</button>
+                    </td>
+                `;
+                orderTable.appendChild(row);
+            });
+        });
+    </script>
+
+        <!-- Live Map Tracking with Leaflet -->
+        <script>
+                (function(){
+                    const mapEl = document.getElementById('map');
+                    if (!mapEl || typeof L === 'undefined') return;
+                    const map = L.map('map').setView([6.5244, 3.3792], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+                    const marker = L.marker([6.5244, 3.3792]).addTo(map);
+
+                    // Update marker from geolocation (local preview of rider)
+                    if ('geolocation' in navigator) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                            const { latitude, longitude } = pos.coords;
+                            marker.setLatLng([latitude, longitude]);
+                            map.panTo([latitude, longitude]);
+                        });
+                    }
+
+                    // If any location events are broadcast (e.g., from server), update marker
+                    if (typeof io !== 'undefined') {
+                        const s = window.__qs_socket || io();
+                        s.on?.('order:loc', (loc) => {
+                            if (typeof loc?.lat === 'number' && typeof loc?.lng === 'number') {
+                                marker.setLatLng([loc.lat, loc.lng]);
+                                map.panTo([loc.lat, loc.lng]);
+                            }
+                        });
+                    }
+                })();
+        </script>
+<audio id="readySound" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="deliveredSound" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+</body>
+</html>
+

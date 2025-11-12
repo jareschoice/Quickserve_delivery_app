@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickServe - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Page background */
+        body {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 50%, #FFD700 100%);
+            min-height: 100vh;
+            padding-bottom: 40px;
+            -webkit-font-smoothing:antialiased;
+        }
+
+        /* Center the content and limit width for web (desktop) view */
+        .container {
+            max-width: 960px;
+        }
+
+        /* Page wrapper to vertically center the form on desktop */
+        .page-center {
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255,215,0,0.6);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #FF6B00, #FF8C00) !important;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 18px;
+        }
+
+        /* Logo area — scale down for web, keep readable on mobile */
+        .logo-header {
+            text-align: center;
+            margin-bottom: 18px;
+            padding-top: 18px;
+        }
+
+        .logo-q {
+            width: 64px;
+            height: 64px;
+            background: #FFD700;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #FF6B00;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            color: #FFD700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.18);
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #FF6B00, #FFD700);
+            border: 1px solid #FFD700;
+            color: white;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #FFD700, #FF6B00);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+        }
+
+        .back-link {
+            background: rgba(255, 255, 255, 0.95);
+            color: #FF6B00;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            border: 1px solid rgba(255,215,0,0.6);
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            background: #FFD700;
+            color: #FF6B00;
+        }
+
+        /* Bottom navigation (mobile-only). Hidden on wider viewports so page looks like a web page */
+        .bottom-nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 64px;
+            background: #ffffff;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -6px 18px rgba(0,0,0,0.06);
+            z-index: 40;
+        }
+
+        .bottom-nav a {
+            color: #444;
+            text-decoration: none;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* utility / small link styles */
+        .forgot-link {
+            color: #FF6B00;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .forgot-link:hover { text-decoration: underline; }
+
+        /* On wider screens use a more web-like layout */
+        @media (min-width: 768px) {
+            .bottom-nav { display: none; }
+            .card-body { padding: 24px; }
+            .container { padding-top: 0; }
+            /* make the card a reasonable width on desktop */
+            .login-card { max-width: 420px; width: 100%; }
+        }
+
+        /* Small screens — ensure the form is comfortable */
+        @media (max-width: 575px) {
+            .login-card { margin: 0 16px; border-radius: 10px; }
+            .logo-q { width: 56px; height: 56px; font-size: 28px; }
+            h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+        <div class="page-center">
+            <div class="logo-header">
+                <div class="logo-q">Q</div>
+                <h1>QuickServe</h1>
+            </div>
+            <div class="container mt-3">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+                <div class="card login-card">
+                    <div class="card-header text-white text-center">
+                        <h4 class="mb-0">Staff Login</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="login-form">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="d-flex justify-content-end mb-3">
+                                <a href="forgot-password.html" class="forgot-link">Forgot Password?</a>
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Login As</label>
+                                <select class="form-select" id="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="vendor">Vendor</option>
+                                    <option value="dispatcher">Dispatcher</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-login w-100">Login</button>
+                        </form>
+                        <div id="error-message" class="alert alert-danger mt-3 d-none"></div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="home.html" class="back-link"><i class="bi bi-arrow-left"></i> Back to Home</a>
+                </div>
+            </div> <!-- col -->
+        </div> <!-- row -->
+    </div> <!-- container -->
+</div> <!-- page-center -->
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="home.html">
+            <i class="bi bi-house-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="#">
+            <i class="bi bi-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="checkout.html">
+            <i class="bi bi-bag-fill"></i>
+            <span>Orders</span>
+        </a>
+        <a href="#">
+            <i class="bi bi-chat-dots-fill"></i>
+            <span>Support</span>
+        </a>
+        <a href="profile.html">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/login.js"></script>
+<audio id="readySound" preload="auto" src="/event-frontend/audio/ready.mp3"></audio>
+<audio id="deliveredSound" preload="auto" src="/event-frontend/audio/delivered.mp3"></audio>
+</body>
+</html>
+
+

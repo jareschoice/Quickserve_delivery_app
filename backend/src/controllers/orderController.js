@@ -1,17 +1,19 @@
 // ===============================
-// FILE: controllers/orderController.js
+// FILE: backend/controllers/orderController.js
 // ===============================
 import Order from '../models/Order.js'
 import Product from '../models/Product.js'
 import Vendor from '../models/Vendor.js'
 import Transaction from '../models/Transaction.js'
+import { sendOrderNotification } from '../utils/notify.js'
 
 // =====================================
 // ✳️ CUSTOMER CREATES AN ORDER
 // =====================================
 export const createOrder = async (req, res) => {
   try {
-    const { items, vendorId, deliveryAddress, notes, paymentMethod } = req.body
+    const { items, vendorId, deliveryAddress, notes, paymentMethod, seatNumber, phoneNumber } = req.body
+
     if (!items || items.length === 0)
       return res.status(400).json({ error: 'Order must contain items' })
 
@@ -40,6 +42,7 @@ export const createOrder = async (req, res) => {
     const platformFee = 50
     const total = subtotal + deliveryFee + platformFee
 
+    // ✅ Create new order
     const order = await Order.create({
       consumerId: req.user._id,
       vendorId,
@@ -50,9 +53,38 @@ export const createOrder = async (req, res) => {
       total,
       deliveryAddress,
       notes,
+      seatNumber,
+      phoneNumber,
       payment: { channel: paymentMethod || 'cash', paid: false },
       status: 'placed'
     })
+
+    // ✅ Emit to dispatchers
+    try {
+      const io = req.app.get('io')
+      if (io) {
+        io.to('dispatchers_room').emit('new_delivery_request', {
+          orderId: order._id,
+          seatNumber,
+          phoneNumber,
+          totalAmount: total,
+          items: orderItems,
+          vendor: {
+            businessName: vendor.storeName,
+            businessAddress: vendor.businessAddress || 'AutoFest Arena',
+            phone: vendor.phoneNumber || 'N/A'
+          }
+        })
+        console.log(`📦 Order emitted to dispatchers: ${order._id}`)
+      }
+    } catch (emitErr) {
+      console.error('Socket emit failed:', emitErr.message)
+    }
+
+    // Send placed notification
+    try {
+      sendOrderNotification(req.app.get('io'), order, 'placed', 'Your order has been placed successfully!');
+    } catch (nErr) { console.error('notify createOrder', nErr && nErr.message); }
 
     res.status(201).json({ success: true, message: 'Order placed successfully', order })
   } catch (e) {
@@ -103,7 +135,6 @@ export const updateOrderStatus = async (req, res) => {
     const now = new Date()
     order.status = status
 
-    // Track progress timeline
     if (status === 'accepted') order.acceptedAt = now
     if (status === 'preparing') order.preparedAt = now
     if (status === 'ready') order.readyAt = now
@@ -112,14 +143,13 @@ export const updateOrderStatus = async (req, res) => {
       order.deliveredAt = now
       order.isPaidToVendor = true
 
-      // Automatically credit vendor wallet
+      // Auto credit vendor
       const vendor = await Vendor.findById(order.vendorId)
       if (vendor) {
         vendor.wallet += order.subtotal
         await vendor.save()
       }
 
-      // Record transaction
       await Transaction.create({
         user: order.vendorId,
         amount: order.subtotal,
@@ -129,6 +159,20 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     await order.save()
+    // Send notifications according to status
+    try {
+      const msg = status === 'accepted' ? 'Vendor accepted your order. Preparing your meal...' :
+        status === 'preparing' ? 'Your order is being prepared.' :
+        status === 'ready' ? 'Your order is ready for pickup.' :
+        status === 'in_transit' ? 'Your order is now on the way.' :
+        status === 'delivered' ? 'Order delivered successfully! Please rate your experience.' :
+        `Order updated to ${status}`
+
+      sendOrderNotification(req.app.get('io'), order, status, msg)
+    } catch (nErr) {
+      console.error('notify updateOrderStatus', nErr && nErr.message)
+    }
+
     res.json({ success: true, message: `Order updated to ${status}`, order })
   } catch (e) {
     res.status(500).json({ error: 'Failed to update order status' })
@@ -136,7 +180,7 @@ export const updateOrderStatus = async (req, res) => {
 }
 
 // =====================================
-// ✳️ ADD RATING / FEEDBACK
+// ✳️ FEEDBACK + ANALYTICS
 // =====================================
 export const rateOrder = async (req, res) => {
   try {
@@ -156,9 +200,6 @@ export const rateOrder = async (req, res) => {
   }
 }
 
-// =====================================
-// ✳️ ANALYTICS SUMMARY
-// =====================================
 export const getOrderAnalytics = async (req, res) => {
   try {
     const totalOrders = await Order.countDocuments()

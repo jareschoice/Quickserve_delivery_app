@@ -9,15 +9,65 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ error: "Missing fields" });
+    console.log('📥 Registration request:', req.body);
+    const { name, email, password, phone, seatNumber, role } = req.body;
+    
+    if (!name || !email || !password) {
+      console.log('❌ Missing fields:', { name: !!name, email: !!email, password: !!password });
+      return res.status(400).json({ error: "Missing required fields", message: "Name, email, and password are required" });
+    }
+    
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ error: "Email already in use" });
-    const user = await User.create({ name, email, password, role: role || "customer" });
+    if (exists) {
+      console.log('❌ Email already in use:', email);
+      return res.status(400).json({ error: "Email already in use", message: "This email is already registered" });
+    }
+    
+    // Create user with additional fields
+    const userData = { 
+      name, 
+      email, 
+      password, 
+      role: role || "customer",
+      profile: {}
+    };
+    
+    // Add optional fields to profile if provided
+    if (phone) userData.profile.phone = phone;
+    if (seatNumber) userData.profile.seatNumber = seatNumber;
+    
+    const user = await User.create(userData);
+
+    // Send verification email
+    try {
+      const verifyToken = user.createVerifyToken();
+      await user.save({ validateBeforeSave: false });
+
+      const verifyURL = `${req.protocol}://${req.get('host')}/api/auth/verify-email/${verifyToken}`;
+      const message = `Hi ${user.name},\n\nPlease verify your email address by clicking the link below:\n${verifyURL}\n\nThis link will expire in 10 minutes.\n\nIf you did not create this account, please ignore this email.`;
+
+      await sendEmail({
+        email: user.email,
+        subject: 'QuickServe - Verify Your Email',
+        message,
+      });
+      console.log(`✅ Verification email sent to ${user.email}`);
+    } catch (err) {
+      console.error('💥 Error sending verification email:', err.message);
+      // We don't block registration if email fails
+    }
+
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
-    res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role }, token });
+    console.log('✅ User registered:', user.email, '| Role:', user.role);
+    res.json({ 
+      ok: true, 
+      message: "Account created successfully! Please check your email to verify your account.",
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }, 
+      token 
+    });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('💥 Registration error:', e.message);
+    res.status(500).json({ error: "Registration failed", message: e.message });
   }
 });
 
@@ -218,5 +268,95 @@ router.post('/resend-verification', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Email required' })
   return res.json({ message: 'Verification sent' })
 })
+
+// Forgot Password - Send reset token to email
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email }).select('+password');
+    
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.json({ message: 'If that email exists, a reset link has been sent' });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // Send reset email
+    try {
+      // For development, use the frontend's actual URL (adjust port to match Live Server)
+      const frontendURL = process.env.FRONTEND_URL || 'http://127.0.0.1:5500/event-frontend';
+      const resetURL = `${frontendURL}/reset-password.html?token=${resetToken}`;
+      const message = `Hi ${user.name},\n\nYou requested a password reset. Click the link below to reset your password:\n\n${resetURL}\n\nThis link will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.`;
+
+      await sendEmail({
+        email: user.email,
+        subject: 'QuickServe - Password Reset Request',
+        message,
+      });
+
+      console.log(`✅ Password reset email sent to ${user.email}`);
+      console.log(`📧 Reset URL: ${resetURL}`);
+    } catch (err) {
+      console.error('💥 Error sending reset email:', err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ error: 'Error sending email. Please try again.' });
+    }
+
+    res.json({ message: 'If that email exists, a reset link has been sent' });
+  } catch (error) {
+    console.error('💥 Forgot password error:', error);
+    res.status(500).json({ error: 'Server error. Please try again.' });
+  }
+});
+
+// Reset Password - Update password with token
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const { password } = req.body;
+    
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Hash the token from URL to compare with database
+    const resetTokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    
+    const user = await User.findOne({
+      resetPasswordToken: resetTokenHash,
+      resetPasswordExpires: { $gt: Date.now() }
+    }).select('+password');
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Update password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    console.log(`✅ Password reset successful for ${user.email}`);
+    
+    res.json({ message: 'Password reset successful! You can now sign in with your new password.' });
+  } catch (error) {
+    console.error('💥 Reset password error:', error);
+    res.status(500).json({ error: 'Server error. Please try again.' });
+  }
+});
 
 export default router;

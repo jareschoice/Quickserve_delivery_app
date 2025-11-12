@@ -81,6 +81,16 @@ const Login = ({ setIsAuthenticated }) => {
               placeholder="••••••••"
               required
             />
+            <div className="text-right mt-2">
+              <a
+                href="http://127.0.0.1:5555/event-frontend/forgot-password.html"
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </a>
+            </div>
           </div>
 
           <button

@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Falls back to local network when not provided.
 const String kApiBase = String.fromEnvironment(
   'BACKEND_BASE_URL',
-  defaultValue: 'http://192.168.100.104:5555', // Your LAN IP
+  defaultValue: 'http://192.168.33.104:5555', // Your LAN IP
 );
 bool get useMock => false; // Disable mock mode
 
