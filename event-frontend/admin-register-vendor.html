@@ -324,12 +324,12 @@
     };
 
     try {
-      console.log(➡ Sending to ${AUTH_API_URL}/register);
-      const response = await fetch(${AUTH_API_URL}/register, {
+      console.log(`➡ Sending to ${AUTH_API_URL}/register`);
+      const response = await fetch(`${AUTH_API_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': Bearer ${token}
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });
@@ -341,11 +341,11 @@
         // Create vendor profile (optional secondary call)
         if (data?.token) {
           try {
-            await fetch(${API_BASE_URL}/vendors/profile, {
+            await fetch(`${API_BASE_URL}/vendors/profile`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': Bearer ${data.token}
+                'Authorization': `Bearer ${data.token}`
               },
               body: JSON.stringify({ storeName: businessName })
             });

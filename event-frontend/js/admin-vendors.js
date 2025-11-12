@@ -78,7 +78,7 @@ function applyFilter() {
 
 async function load() {
   await requireAdmin();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('eventToken');
   const res = await fetch(`${API_BASE_URL}/admin/vendors`, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
@@ -88,7 +88,7 @@ async function load() {
 }
 
 async function updateVendor(id, payload) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('eventToken');
   const res = await fetch(`${API_BASE_URL}/admin/vendors/${id}`, {
     method: 'PUT',
     headers: {
@@ -105,7 +105,7 @@ async function updateVendor(id, payload) {
 }
 
 async function deleteVendor(id) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('eventToken');
   const res = await fetch(`${API_BASE_URL}/admin/vendors/${id}`, {
     method: 'DELETE',
     headers: { 'Authorization': `Bearer ${token}` }

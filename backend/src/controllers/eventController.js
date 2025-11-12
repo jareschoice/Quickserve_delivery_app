@@ -92,7 +92,30 @@ export const createOrder = async (req, res) => {
     // Notify consumer + dispatchers/admin that order was placed
     try {
       const io = req.app.get('io');
+      // Send existing structured notifications (admin, order rooms, consumer)
       sendOrderNotification(io, order, 'placed', 'Your order has been placed successfully!');
+
+      // Also emit a direct vendor-facing event so vendor dashboards listing "pending" orders
+      // receive the new order in real-time. This targets common room keys used by the frontend:
+      // - vendor user id (legacy plain id)
+      // - user:<vendorId>
+      // - order:<orderId> and order_<orderId>
+      if (io && order && order.vendorId) {
+        const vendorIdStr = String(order.vendorId);
+        const payload = {
+          orderId: String(order._id),
+          seatNumber: order.seatNumber,
+          phone: order.phone,
+          status: order.status,
+          total: order.total,
+          items: order.items
+        };
+
+        io.to(vendorIdStr).emit('order:placed', payload);
+        io.to(`user:${vendorIdStr}`).emit('order:placed', payload);
+        io.to(`order:${String(order._id)}`).emit('order:placed', payload);
+        io.to(`order_${String(order._id)}`).emit('order:placed', payload);
+      }
     } catch (nErr) { console.error('notify createOrder', nErr && nErr.message); }
 
     res.json({ 
@@ -186,7 +209,52 @@ export const updateOrderStatus = async (req, res) => {
     // Emit socket event for real-time updates
     const io = req.app.get('io');
     if (io) {
+      // Generic status update (legacy/listeners)
       io.emit('orderStatusUpdate', { orderId, status });
+
+      // Targeted emits for frontend rooms used across the app
+      const orderIdStr = String(order._id);
+      const vendorIdStr = order.vendorId ? String(order.vendorId) : null;
+      const payload = {
+        orderId: orderIdStr,
+        status,
+        seatNumber: order.seatNumber,
+        phone: order.phone,
+        items: order.items,
+        total: order.total,
+        vendorId: vendorIdStr
+      };
+
+      // Emit status-specific events
+      if (status === 'accepted') {
+        // Notify dispatchers to consider this order
+        io.to('dispatchers_room').emit('order:accepted', payload);
+        // Notify admin and vendor rooms
+        io.to('admin_room').emit('order:accepted', payload);
+        if (vendorIdStr) {
+          io.to(vendorIdStr).emit('order:accepted', payload);
+          io.to(`user:${vendorIdStr}`).emit('order:accepted', payload);
+        }
+        // Also notify any listeners on the order room
+        io.to(`order:${orderIdStr}`).emit('order:accepted', payload);
+        io.to(`order_${orderIdStr}`).emit('order:accepted', payload);
+      } else if (status === 'preparing') {
+        io.to(`order:${orderIdStr}`).emit('order:preparing', payload);
+        io.to('admin_room').emit('order:preparing', payload);
+      } else if (status === 'ready') {
+        // Ready orders should notify dispatchers (pickup) and order room
+        io.to('dispatchers_room').emit('order:ready', { ...payload, pickup: true });
+        io.to(`order:${orderIdStr}`).emit('order:ready', payload);
+        io.to('admin_room').emit('order:ready', payload);
+        if (vendorIdStr) {
+          io.to(vendorIdStr).emit('order:ready', payload);
+          io.to(`user:${vendorIdStr}`).emit('order:ready', payload);
+        }
+      } else if (status === 'cancelled') {
+        io.to(`order:${orderIdStr}`).emit('order:cancelled', payload);
+        io.to('admin_room').emit('order:cancelled', payload);
+        if (vendorIdStr) io.to(vendorIdStr).emit('order:cancelled', payload);
+      }
     }
 
     // Send friendly notifications to consumer (and other parties as appropriate)
@@ -286,17 +354,47 @@ export const claimOrder = async (req, res) => {
       });
     }
 
-    // Emit socket event
+    // Emit socket events with consistent payload (include vendor info + orderGroupId if present)
     const io = req.app.get('io');
-    if (io) {
-      io.emit('orderClaimed', { 
-        orderId, 
-        dispatcherId,
-        seatNumber: order.seatNumber 
-      });
+    try {
+      // Populate vendor info for richer payload
+      const populated = await EventOrder.findById(order._id).populate('vendorId', 'name profile').lean();
+
+      const payload = {
+        orderId: String(order._id),
+        dispatcherId: String(dispatcherId),
+        seatNumber: order.seatNumber,
+        phone: order.phone,
+        status: order.status,
+        items: order.items,
+        total: order.total,
+        vendorId: populated?.vendorId?._id ? String(populated.vendorId._id) : (order.vendorId ? String(order.vendorId) : null),
+        vendorName: populated?.vendorId?.name || null,
+        orderGroupId: populated?.orderGroupId || null
+      };
+
+      if (io) {
+        // Backwards-compatible raw event
+        io.emit('orderClaimed', { orderId: String(order._id), dispatcherId: String(dispatcherId), seatNumber: order.seatNumber });
+
+        // New, namespaced events for frontend consumers
+        io.to('dispatchers_room').emit('order:in_transit', payload);
+        io.to(`order:${String(order._id)}`).emit('order:in_transit', payload);
+        io.to(`order_${String(order._id)}`).emit('order:in_transit', payload);
+
+        // Notify admin and vendor rooms as well
+        io.to('admin_room').emit('order:in_transit', payload);
+        if (payload.vendorId) {
+          io.to(payload.vendorId).emit('order:in_transit', payload);
+          io.to(`user:${payload.vendorId}`).emit('order:in_transit', payload);
+        }
+      }
+
       try {
         sendOrderNotification(io, order, 'in_transit', 'Your order is now on the way.');
       } catch (nErr) { console.error('notify claimOrder', nErr && nErr.message); }
+    } catch (emitErr) {
+      console.error('emit claimOrder error', emitErr && emitErr.message);
     }
 
     res.json({ success: true, order });
@@ -327,11 +425,41 @@ export const confirmDelivery = async (req, res) => {
 
     // Emit socket event
     const io = req.app.get('io');
-    if (io) {
-      io.emit('orderDelivered', { orderId });
+    try {
+      // Populate vendor for payload enrichment
+      const populated = await EventOrder.findById(order._id).populate('vendorId', 'name profile').lean();
+      const payload = {
+        orderId: String(order._id),
+        status: order.status,
+        deliveredAt: order.deliveryConfirmedAt,
+        phone: order.phone,
+        seatNumber: order.seatNumber,
+        items: order.items,
+        total: order.total,
+        vendorId: populated?.vendorId?._id ? String(populated.vendorId._id) : (order.vendorId ? String(order.vendorId) : null),
+        vendorName: populated?.vendorId?.name || null,
+        orderGroupId: populated?.orderGroupId || null
+      };
+
+      if (io) {
+        // Backwards-compatible event
+        io.emit('orderDelivered', { orderId: String(order._id) });
+
+        // Namespaced event
+        io.to(`order:${String(order._id)}`).emit('order:delivered', payload);
+        io.to(`order_${String(order._id)}`).emit('order:delivered', payload);
+        io.to('admin_room').emit('order:delivered', payload);
+        if (payload.vendorId) {
+          io.to(payload.vendorId).emit('order:delivered', payload);
+          io.to(`user:${payload.vendorId}`).emit('order:delivered', payload);
+        }
+      }
+
       try {
         sendOrderNotification(io, order, 'delivered', 'Order delivered successfully! Please rate your experience.');
       } catch (nErr) { console.error('notify confirmDelivery', nErr && nErr.message); }
+    } catch (emitErr) {
+      console.error('emit confirmDelivery error', emitErr && emitErr.message);
     }
 
     res.json({ success: true, order });

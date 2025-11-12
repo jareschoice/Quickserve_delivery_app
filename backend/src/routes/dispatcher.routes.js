@@ -176,24 +176,22 @@ router.post("/accept/:orderIdOrGroupId", authRequired("dispatcher"), async (req,
         });
         
         // Notify customer once
-        io.to(String(orders[0].consumerId._id)).emit('order:update', {
-          id: orders[0]._id,
+        const assignedPayload = {
+          orderId: String(orders[0]._id),
           status: 'assigned',
           isMultiVendor: true,
-          dispatcher: {
-            name: dispatcher.name,
-            phone: dispatcher.phone
-          },
+          dispatcher: { name: dispatcher.name, phone: dispatcher.phone },
           message: `Dispatcher assigned! Collecting from ${orders.length} vendors...`,
-          pickupLocations: orders.map(o => o.vendor?.businessName)
-        });
+          pickupLocations: orders.map(o => o.vendor?.businessName),
+          orderGroupId: orders[0].orderGroupId || null
+        };
+        io.to(String(orders[0].consumerId._id)).emit('order:update', { id: orders[0]._id, status: 'assigned', message: `Dispatcher assigned! Collecting from ${orders.length} vendors...` });
+        io.to(String(orders[0].consumerId._id)).emit('order:assigned', assignedPayload);
+        io.to(`order:${String(orders[0]._id)}`).emit('order:assigned', assignedPayload);
         
         // Notify other dispatchers
-        io.to('dispatchers_room').emit('delivery_taken', {
-          orderGroupId: orders[0].orderGroupId,
-          isMultiVendor: true,
-          message: `Multi-vendor delivery accepted by ${dispatcher.name}`
-        });
+        io.to('dispatchers_room').emit('delivery_taken', { orderGroupId: orders[0].orderGroupId, isMultiVendor: true, message: `Multi-vendor delivery accepted by ${dispatcher.name}` });
+        io.to('dispatchers_room').emit('order:assigned', { orderGroupId: orders[0].orderGroupId, dispatcher: dispatcher.dispatcherId, isMultiVendor: true });
         
         // Notify admin
         io.to('admin_room').emit('order:dispatcher_assigned', {
@@ -227,11 +225,15 @@ router.post("/accept/:orderIdOrGroupId", authRequired("dispatcher"), async (req,
           },
           message: 'Dispatcher assigned! On the way to pickup your order.'
         });
+        // Also emit namespaced assignment event
+        io.to(String(order.consumerId._id)).emit('order:assigned', { orderId: order._id, status: 'assigned', dispatcher: { name: dispatcher.name, phone: dispatcher.phone }, orderGroupId: order.orderGroupId || null });
+        io.to(`order:${String(order._id)}`).emit('order:assigned', { orderId: order._id, status: 'assigned', dispatcher: { name: dispatcher.name, phone: dispatcher.phone }, orderGroupId: order.orderGroupId || null });
         
         io.to('dispatchers_room').emit('delivery_taken', {
           orderId: order._id,
           message: 'This delivery has been accepted by another dispatcher'
         });
+        io.to('dispatchers_room').emit('order:assigned', { orderId: order._id, dispatcher: dispatcher.dispatcherId });
         
         io.to('admin_room').emit('order:dispatcher_assigned', {
           orderId: order._id,
@@ -239,6 +241,7 @@ router.post("/accept/:orderIdOrGroupId", authRequired("dispatcher"), async (req,
           dispatcher: dispatcher.dispatcherId,
           timestamp: new Date()
         });
+        io.to('admin_room').emit('order:assigned', { orderId: order._id, vendor: order.vendor?.businessName, dispatcher: dispatcher.dispatcherId, timestamp: new Date() });
       }
     }
     
@@ -311,6 +314,15 @@ router.post("/status", authRequired("dispatcher"), async (req, res) => {
           io.to(`order_${o._id}`).emit('delivery_status_update', { status: o.status, timestamp: now });
           // also notify consumer user room
           io.to(String(o.consumerId)).emit('order:update', { id: o._id, status: o.status, message: 'Delivery status updated' });
+          // emit namespaced delivery events
+          const payload = { orderId: String(o._id), status: o.status, timestamp: now, orderGroupId: o.orderGroupId || null, vendorId: o.vendor ? String(o.vendor) : null };
+          if (o.status === 'in_transit' || o.status === 'assigned' || o.status === 'picked_up') {
+            io.to(String(o.consumerId)).emit('order:in_transit', payload);
+            io.to(`order:${String(o._id)}`).emit('order:in_transit', payload);
+          } else if (o.status === 'arrived_customer' || o.status === 'arrived') {
+            io.to(String(o.consumerId)).emit('order:arrived', payload);
+            io.to(`order:${String(o._id)}`).emit('order:arrived', payload);
+          }
         }
       }
     } else {
@@ -321,6 +333,14 @@ router.post("/status", authRequired("dispatcher"), async (req, res) => {
       await order.save();
       if (io) {
         io.to(`order_${order._id}`).emit('delivery_status_update', { status: order.status, timestamp: now });
+        const payload = { orderId: String(order._id), status: order.status, timestamp: now, orderGroupId: order.orderGroupId || null, vendorId: order.vendor ? String(order.vendor) : null };
+        if (order.status === 'in_transit' || order.status === 'assigned' || order.status === 'picked_up') {
+          io.to(String(order.consumerId)).emit('order:in_transit', payload);
+          io.to(`order:${String(order._id)}`).emit('order:in_transit', payload);
+        } else if (order.status === 'arrived_customer' || order.status === 'arrived') {
+          io.to(String(order.consumerId)).emit('order:arrived', payload);
+          io.to(`order:${String(order._id)}`).emit('order:arrived', payload);
+        }
       }
     }
     
@@ -410,7 +430,11 @@ router.post("/confirm-delivery", authRequired("dispatcher"), async (req, res) =>
 
         // Notify customer for each order
         if (io) {
+          const payload = { orderId: String(o._id), status: 'delivered', deliveredAt: new Date(), orderGroupId: o.orderGroupId || null, vendorId: o.vendor ? String(o.vendor._id) : null };
           io.to(`order_${o._id}`).emit('order_delivered', { timestamp: new Date(), message: 'Your order has been delivered! Please rate your experience.' });
+          io.to(`order:${String(o._id)}`).emit('order:delivered', payload);
+          io.to(`order_${String(o._id)}`).emit('order:delivered', payload);
+          io.to(String(o.consumerId)).emit('order:delivered', payload);
         }
       }
 
@@ -446,7 +470,11 @@ router.post("/confirm-delivery", authRequired("dispatcher"), async (req, res) =>
       }
       await dispatcher.completeDelivery();
       if (io) {
+  const payload = { orderId: String(order._id), status: 'delivered', deliveredAt: new Date(), orderGroupId: order.orderGroupId || null, vendorId: order.vendor ? String(order.vendor._id) : null };
         io.to(`order_${order._id}`).emit('order_delivered', { timestamp: new Date(), message: 'Your order has been delivered! Please rate your experience.' });
+        io.to(`order:${String(order._id)}`).emit('order:delivered', payload);
+        io.to(`order_${String(order._id)}`).emit('order:delivered', payload);
+        io.to(String(order.consumerId)).emit('order:delivered', payload);
       }
     }
     

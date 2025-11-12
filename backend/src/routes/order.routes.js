@@ -42,21 +42,29 @@ router.post("/:id/accept", authRequired("vendor"), async (req, res) => {
   // No vendor/admin wallet movements here under consumer-only service charge model
 
   // Emit socket event to customer
-  try { 
-    req.app.get('io')?.to(String(order.consumerId._id)).emit('order:update', { 
-      id: order._id, 
-      status: order.status,
-      message: 'Vendor accepted your order!' 
-    }); 
-  } catch {}
-  
-  // Emit to vendor's own socket to trigger "Call Dispatcher" popup
   try {
-    req.app.get('io')?.to(String(userId)).emit('order:accepted_show_dispatcher', {
-      orderId: order._id,
-      message: 'Order accepted! You can now call a dispatcher when ready.'
-    });
-  } catch {}
+    const io = req.app.get('io');
+    const acceptedPayload = {
+      orderId: String(order._id),
+      status: order.status,
+      message: 'Vendor accepted your order!',
+      items: order.items || null,
+      total: order.total || null,
+      vendorId: String(userId),
+      orderGroupId: order.orderGroupId || null
+    };
+    io?.to(String(order.consumerId._id)).emit('order:update', { id: order._id, status: order.status, message: 'Vendor accepted your order!' });
+    // Namespaced events for consumers and order rooms
+    io?.to(String(order.consumerId._id)).emit('order:accepted', acceptedPayload);
+    io?.to(`order:${String(order._id)}`).emit('order:accepted', acceptedPayload);
+    io?.to(`order_${String(order._id)}`).emit('order:accepted', acceptedPayload);
+
+    // Emit to vendor's own socket to trigger "Call Dispatcher" popup and vendor listeners
+    const vendorPayload = { orderId: String(order._id), message: 'Order accepted! You can now call a dispatcher when ready.', vendorId: String(userId) };
+    io?.to(String(userId)).emit('order:accepted_show_dispatcher', vendorPayload);
+    io?.to(String(userId)).emit('order:accepted', vendorPayload);
+    io?.to(`user:${String(userId)}`).emit('order:accepted', vendorPayload);
+  } catch (e) { console.warn('emit accept error', e && e.message); }
   
   try { 
     await sendNotification({ 
@@ -104,12 +112,21 @@ router.post("/:id/ready", authRequired("vendor"), async (req, res) => {
       
       // Notify customer of progress
       if (io) {
-        io.to(String(order.consumerId._id)).emit('order:update', {
-          id: order._id,
+        const readyPayload = {
+          orderId: String(order._id),
           status: 'ready',
           message: `${order.vendor?.businessName} is ready! (${readyOrders}/${totalOrders} vendors ready)`,
-          progress: { ready: readyOrders, total: totalOrders }
-        });
+          progress: { ready: readyOrders, total: totalOrders },
+          vendorId: order.vendor?._id ? String(order.vendor._id) : null,
+          vendorName: order.vendor?.businessName || null,
+          orderGroupId: order.orderGroupId || null,
+          items: order.items || null,
+          total: order.total || null
+        };
+        io.to(String(order.consumerId._id)).emit('order:update', { id: order._id, status: 'ready', message: `${order.vendor?.businessName} is ready! (${readyOrders}/${totalOrders} vendors ready)`, progress: { ready: readyOrders, total: totalOrders } });
+        io.to(String(order.consumerId._id)).emit('order:ready', readyPayload);
+        io.to(`order:${String(order._id)}`).emit('order:ready', readyPayload);
+        io.to(`order_${String(order._id)}`).emit('order:ready', readyPayload);
       }
       
       // Only call dispatcher when ALL vendors are ready
@@ -130,7 +147,7 @@ router.post("/:id/ready", authRequired("vendor"), async (req, res) => {
         
         // Broadcast to all available dispatchers
         if (io) {
-          io.to('dispatchers_room').emit('new_delivery_request', {
+          const payload = {
             orderGroupId: order.orderGroupId,
             isMultiVendor: true,
             pickupCount: totalOrders,
@@ -141,28 +158,30 @@ router.post("/:id/ready", authRequired("vendor"), async (req, res) => {
               address: order.deliveryAddress
             },
             totalAmount: groupOrders.reduce((sum, o) => sum + (o.total || 0), 0),
-            earning: 70, // Same ₦70 for multi-pickup
+            earning: 70,
             message: `Multi-vendor delivery: ${totalOrders} pickups → 1 delivery!`
-          });
+          };
+          // legacy event kept
+          io.to('dispatchers_room').emit('new_delivery_request', payload);
+          // namespaced event for dispatchers
+          io.to('dispatchers_room').emit('order:dispatch_requested', payload);
         }
         
         // Notify ALL vendors in the group
         groupOrders.forEach(groupOrder => {
           if (io && groupOrder.vendor?.user) {
-            io.to(String(groupOrder.vendor.user)).emit('dispatcher:called', {
-              orderGroupId: order.orderGroupId,
-              message: `All ${totalOrders} vendors ready! Calling dispatcher now...`
-            });
+            const payload = { orderGroupId: order.orderGroupId, message: `All ${totalOrders} vendors ready! Calling dispatcher now...`, vendorId: String(groupOrder.vendor?._id || '') };
+            io.to(String(groupOrder.vendor.user)).emit('dispatcher:called', payload);
+            io.to(String(groupOrder.vendor.user)).emit('order:ready', payload);
+            io.to(`user:${String(groupOrder.vendor.user)}`).emit('order:ready', payload);
           }
         });
         
         // Notify customer
         if (io) {
-          io.to(String(order.consumerId._id)).emit('order:update', {
-            id: order._id,
-            status: 'dispatch_requested',
-            message: `All items ready! Looking for a dispatcher to collect from ${totalOrders} locations...`
-          });
+          const dispatchReqPayload = { orderGroupId: order.orderGroupId, status: 'dispatch_requested', message: `All items ready! Looking for a dispatcher to collect from ${totalOrders} locations...`, vendorCount: totalOrders };
+          io.to(String(order.consumerId._id)).emit('order:update', { id: order._id, status: 'dispatch_requested', message: `All items ready! Looking for a dispatcher to collect from ${totalOrders} locations...` });
+          io.to(String(order.consumerId._id)).emit('order:dispatch_requested', dispatchReqPayload);
         }
       }
       
@@ -251,8 +270,21 @@ router.post("/:id/scan", authRequired(), async (req, res) => {
       if (order.riderId) await adjustUserWallet(order.riderId, riderShare, 'credit', { kind: 'rider_share', stage: 'rider_delivery', order: order._id });
         try {
           const io = req.app.get('io');
+          const payload = {
+            orderId: String(order._id),
+            status: order.status,
+            deliveredAt: order.deliveredAt || new Date(),
+            orderGroupId: order.orderGroupId || null,
+            vendorId: order.vendorId ? String(order.vendorId) : null,
+            items: order.items || null,
+            total: order.total || null
+          };
           io?.to(String(order.consumerId)).emit('order:update', { id: order._id, status: order.status });
-          if (order.riderId) io?.to(String(order.riderId)).emit('order:update', { id: order._id, status: order.status });
+          io?.to(String(order.consumerId)).emit('order:delivered', payload);
+          if (order.riderId) {
+            io?.to(String(order.riderId)).emit('order:update', { id: order._id, status: order.status });
+            io?.to(String(order.riderId)).emit('order:delivered', payload);
+          }
         } catch {}
         try { if (order.riderId) await sendNotification({ userId: order.riderId, title: 'Delivery complete ✔️', message: `Order ${String(order._id).slice(-6)} marked delivered.`, type: 'order', meta: { orderId: order._id }, app: req.app }); } catch {}
     } else {

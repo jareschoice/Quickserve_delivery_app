@@ -412,8 +412,11 @@ async function setupRealtime() {
         adminSocket.emit('identify', { role: 'admin' });
 
         const refresh = () => { loadLiveOrders(); loadStats(); };
-        adminSocket.on('order:update', (p) => { refresh(); playNotificationSound(); showBrowserNotification('Order Updated', 'An order status just changed.'); });
-        adminSocket.on('order:new', (p) => { refresh(); playNotificationSound(); showBrowserNotification('New Order', 'A new order has been placed.'); });
+    adminSocket.on('order:update', (p) => { refresh(); playNotificationSound(); showBrowserNotification('Order Updated', 'An order status just changed.'); });
+    adminSocket.on('order:new', (p) => { refresh(); playNotificationSound(); showBrowserNotification('New Order', 'A new order has been placed.'); });
+    // Also listen to namespaced lifecycle events (backwards compatible)
+    adminSocket.on('order:placed', (p) => { try { refresh(); playNotificationSound(); showBrowserNotification('New Order', 'A new order has been placed.'); } catch (e) { console.error(e); } });
+    adminSocket.on('order:delivered', (p) => { try { refresh(); playNotificationSound(); showBrowserNotification('Order Delivered', 'An order was delivered.'); } catch (e) { console.error(e); } });
     adminSocket.on('order:notification', (payload) => { try { refresh(); playNotificationSound(); showBrowserNotification('Order Notification', payload?.message || 'Order update'); } catch (e) {} });
         adminSocket.on('notification:admin', () => {
             loadDashboardData();
@@ -648,6 +651,12 @@ function setupNotificationsUI() {
     }
 }
 socket.on('new_review', (review) => {
-  showToast('ðŸ“ New Customer Review', ${review.comment || 'New feedback received'} (â­${review.rating}));
-  new Audio('/audio/notification.mp3').play().catch(() => {});
+    try {
+        const comment = (review && (review.comment || review.message)) || 'New feedback received';
+        const rating = review && typeof review.rating !== 'undefined' ? ` (★${review.rating})` : '';
+        showToast('📝 New Customer Review', `${comment}${rating}`);
+        try { new Audio('/audio/notification.mp3').play().catch(() => {}); } catch {}
+    } catch (e) {
+        console.error('new_review handler error', e);
+    }
 });

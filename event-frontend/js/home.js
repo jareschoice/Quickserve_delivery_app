@@ -216,11 +216,11 @@ function renderProductFeed(products) {
   if (!feed) return;
 
   if (!products.length) {
-    feed.innerHTML =
-      '<p class="text-muted" style="padding:0 16px">No products yet</p>';
+    feed.innerHTML = '<p class="text-muted" style="padding:0 16px">No products yet</p>';
     return;
   }
 
+  // Prefer FoodCourt if present, else all products
   const foodCourt = products.filter(
     (p) => Array.isArray(p.tags) && p.tags.includes('FoodCourt')
   );
@@ -230,29 +230,43 @@ function renderProductFeed(products) {
     <div class="row g-3" style="padding: 0 12px;">
       ${list
         .slice(0, 12)
-        .map(
-          (p) => `
-        <div class="col-6 col-md-3">
-          <a class="text-decoration-none" href="vendor.html?id=${p.vendorId}">
-            <div class="card h-100">
-              ${
-                p.imageUrl || p.image
-                  ? `<img src="${p.imageUrl || (FILE_BASE_URL ? FILE_BASE_URL + p.image : p.image)}" class="card-img-top" style="height:140px;object-fit:cover" />`
-                  : `<div class="bg-light d-flex align-items-center justify-content-center" style="height:140px"><i class="bi bi-image"></i></div>`
-              }
-              <div class="card-body p-2">
-                <div class="fw-semibold small">${p.name}</div>
-                <div class="text-primary fw-bold">â‚¦${Number(
-                  p.price
-                ).toLocaleString()}</div>
-                <div class="text-muted small">${p.quantity || 1} ${
-            p.unit || 'pcs'
-          } ${p.prepDurationMins ? `• ${p.prepDurationMins}m` : ''}</div>
-              </div>
+        .map((p) => {
+          // Image selection: imageUrl, image, images[0]
+          let imgSrc = '';
+          if (p.imageUrl) {
+            imgSrc = p.imageUrl;
+          } else if (p.image) {
+            imgSrc = FILE_BASE_URL ? FILE_BASE_URL + p.image : p.image;
+          } else if (Array.isArray(p.images) && p.images[0]) {
+            imgSrc = FILE_BASE_URL ? FILE_BASE_URL + p.images[0] : p.images[0];
+          }
+
+          // VendorId: object or string
+          let vendorId = '';
+          if (typeof p.vendorId === 'object' && p.vendorId._id) {
+            vendorId = p.vendorId._id;
+          } else {
+            vendorId = p.vendorId;
+          }
+
+          return `
+            <div class="col-6 col-md-3">
+              <a class="text-decoration-none" href="vendor.html?id=${vendorId}">
+                <div class="card h-100">
+                  ${imgSrc
+                    ? `<img src="${imgSrc}" class="card-img-top" style="height:140px;object-fit:cover" />`
+                    : `<div class="bg-light d-flex align-items-center justify-content-center" style="height:140px"><i class="bi bi-image"></i></div>`
+                  }
+                  <div class="card-body p-2">
+                    <div class="fw-semibold small">${p.name}</div>
+                    <div class="text-primary fw-bold">₦${Number(p.price).toLocaleString()}</div>
+                    <div class="text-muted small">${p.quantity || 1} ${p.unit || 'pcs'}${p.prepDurationMins ? ` • ${p.prepDurationMins}m` : ''}</div>
+                  </div>
+                </div>
+              </a>
             </div>
-          </a>
-        </div>`
-        )
+          `;
+        })
         .join('')}
     </div>`;
 }
@@ -459,3 +473,52 @@ function setupZaddyImage() {
 }
 
 console.log('âœ… QuickServe Home.js initialized');
+// Lightweight socket listeners to handle namespaced backend events (backwards-compatible)
+try {
+  if (socket) {
+    const localUser = JSON.parse(localStorage.getItem('user') || localStorage.getItem('eventUser') || '{}');
+    const localUserId = localUser?._id || localUser?.id || null;
+
+    function homeNotify(title, msg) {
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(title, { body: msg });
+        } else {
+          console.log('[HomeNotify]', title, msg);
+        }
+      } catch (e) { console.log('[HomeNotify] error', e); }
+    }
+
+    socket.on && socket.on('order:placed', (p) => {
+      try { console.log('home socket order:placed', p); } catch (e) {}
+    });
+
+    socket.on && socket.on('order:accepted', (p) => {
+      try {
+        if (!localUserId || p?.consumerId === localUserId || p?.order?.consumerId === localUserId) {
+          homeNotify('Order Accepted', 'Your order has been accepted by the vendor.');
+        }
+      } catch (e) {}
+    });
+
+    socket.on && socket.on('order:in_transit', (p) => {
+      try {
+        if (!localUserId || p?.consumerId === localUserId || p?.order?.consumerId === localUserId) {
+          homeNotify('Out for Delivery', 'Your order is out for delivery.');
+        }
+      } catch (e) {}
+    });
+
+    socket.on && socket.on('order:delivered', (p) => {
+      try {
+        if (!localUserId || p?.consumerId === localUserId || p?.order?.consumerId === localUserId) {
+          homeNotify('Order Delivered', 'Your order has been delivered. Thank you!');
+        }
+      } catch (e) {}
+    });
+
+    socket.on && socket.on('notification:new', (n) => {
+      try { homeNotify(n?.title || 'Notification', n?.message || ''); } catch (e) {}
+    });
+  }
+} catch (e) { console.warn('Home socket listeners init failed', e); }

@@ -35,6 +35,32 @@ async function displayOrder(order) {
   document.getElementById('order-id').textContent = order._id;
   document.getElementById('order-status').textContent = formatStatus(order.status);
   document.getElementById('seat-id').textContent = order.seatNumber || order.deliveryAddress || 'â€”';
+  // Show phone if available (guestPhone, phone, or customerPhone)
+  const phoneEl = document.getElementById('order-phone');
+  if (phoneEl) phoneEl.textContent = order.guestPhone || order.phone || order.customerPhone || '—';
+
+  // Display order items (support multiple possible field names returned by API)
+  const itemsList = document.getElementById('order-items-list');
+  if (itemsList) {
+    let items = [];
+    if (Array.isArray(order.items) && order.items.length) items = order.items;
+    else if (Array.isArray(order.cart) && order.cart.length) items = order.cart;
+    else if (Array.isArray(order.orderItems) && order.orderItems.length) items = order.orderItems;
+
+    if (items.length) {
+      itemsList.innerHTML = items
+        .map(it => {
+          const qty = it.qty || it.quantity || it.count || 1;
+          const price = Number(it.price || it.unitPrice || it.amount || 0);
+          const name = it.name || it.productName || it.title || 'Item';
+          return `<div class="order-item"><div class="fw-semibold">${name}</div><div class="text-muted small">x${qty} — ₦${price.toLocaleString()}</div></div>`;
+        })
+        .join('');
+    } else {
+      itemsList.innerHTML = '<p class="text-muted">No items listed</p>';
+    }
+  }
+
   updateEta(order);
 
   // Display QR code for customer when rider assigned or in transit
@@ -116,10 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadOrderDetails();
 });
 
-// Optional realtime updates via socket.io
-if (typeof io !== 'undefined') {
+// Optional realtime updates via socket.io — use imported `socket` which safely handles missing io
+if (socket) {
   try {
-    const socket = io(FILE_BASE_URL, { transports: ['websocket','polling'] });
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user?._id) socket.emit('identify', { userId: user._id, role: user.role || 'customer' });
     else socket.emit('identify', { role: 'customer' });
@@ -131,98 +156,35 @@ if (typeof io !== 'undefined') {
         showBrowserNotification('Order Update', 'Your order status was updated.');
       }
     });
+    // Backwards-compatible: respond to new namespaced lifecycle events too
+    socket.on('order:placed', (payload) => {
+      try {
+        if (payload?.orderId === orderId || payload?.id === orderId) {
+          loadOrderDetails();
+          playNotificationSound();
+          showBrowserNotification('Order Placed', 'Your order was placed successfully.');
+        }
+      } catch (e) { console.error(e); }
+    });
+    socket.on('order:assigned', (payload) => {
+      try {
+        if (payload?.orderId === orderId || payload?.id === orderId) {
+          loadOrderDetails();
+          playNotificationSound();
+          showToast('Rider assigned to your order');
+          showBrowserNotification('Dispatcher Assigned', 'A dispatcher has been assigned to your order.');
+        }
+      } catch (e) { console.error(e); }
+    });
     // Specific lifecycle events with friendly messages
-    socket.on('order:accepted', (payload) => {
-      try {
-        if (payload?.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showToast('Vendor has accepted your order.');
-          showBrowserNotification('Order Accepted', 'Vendor has accepted your order.');
-        }
-      } catch (e) {}
-    });
-
-    socket.on('order:preparing', (payload) => {
-      try {
-        if (payload?.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showToast('Your order is being prepared.');
-          showBrowserNotification('Order Preparing', 'Your order is being prepared.');
-        }
-      } catch (e) {}
-    });
-
-    socket.on('order:dispatch_requested', (payload) => {
-      try {
-        if (payload?.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showToast('Dispatcher requested for pickup.');
-          showBrowserNotification('Dispatcher Requested', 'Dispatcher assigned, preparing for delivery.');
-        }
-      } catch (e) {}
-    });
-
-    socket.on('order:in_transit', (payload) => {
-      try {
-        if (payload?.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showToast('Dispatcher is on the way.');
-          showBrowserNotification('Out for Delivery', 'Dispatcher is on the way.');
-        }
-      } catch (e) {}
-    });
-
-    socket.on('order:arrived_customer', (payload) => {
-      try {
-        if (payload?.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showToast('Dispatcher has arrived. Please confirm delivery.');
-          showBrowserNotification('Arrived', 'Dispatcher has arrived. Please confirm delivery.');
-        }
-      } catch (e) {}
-    });
-
-    socket.on('order:delivered', (payload) => {
-      try {
-        if (payload?.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showToast('Order delivered successfully. Thank you!', 'success');
-          showBrowserNotification('Delivered', 'Order delivered successfully. Thank you!');
-          // Prompt for review
-          showReviewModal();
-        }
-      } catch (e) {}
-    });
-    // Generic order notification (friendly messages sent from server)
-    socket.on('order:notification', (payload) => {
-      try {
-        if (payload?.orderId && payload.orderId === orderId) {
-          loadOrderDetails();
-          playNotificationSound();
-          showBrowserNotification('Order Notification', payload.message || 'Order update');
-        }
-      } catch (e) { console.error(e); }
-    });
-
-    // Dispatcher-ready broadcasts (when order is ready for pickup)
-    socket.on('order:ready', (payload) => {
-      try {
-        if (!orderId && payload?.orderId) {
-          // For listing pages we may show a toast; on track page, refresh if it matches
-          if (payload.orderId === orderId) {
-            loadOrderDetails();
-            playNotificationSound();
-            showBrowserNotification('Order Ready', payload.message || 'Your order is ready for pickup');
-          }
-        }
-      } catch (e) { console.error(e); }
-    });
+    socket.on('order:accepted', (payload) => { try { if (payload?.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showToast('Vendor has accepted your order.'); showBrowserNotification('Order Accepted', 'Vendor has accepted your order.'); } } catch (e) {} });
+    socket.on('order:preparing', (payload) => { try { if (payload?.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showToast('Your order is being prepared.'); showBrowserNotification('Order Preparing', 'Your order is being prepared.'); } } catch (e) {} });
+    socket.on('order:dispatch_requested', (payload) => { try { if (payload?.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showToast('Dispatcher requested for pickup.'); showBrowserNotification('Dispatcher Requested', 'Dispatcher assigned, preparing for delivery.'); } } catch (e) {} });
+    socket.on('order:in_transit', (payload) => { try { if (payload?.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showToast('Dispatcher is on the way.'); showBrowserNotification('Out for Delivery', 'Dispatcher is on the way.'); } } catch (e) {} });
+    socket.on('order:arrived_customer', (payload) => { try { if (payload?.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showToast('Dispatcher has arrived. Please confirm delivery.'); showBrowserNotification('Arrived', 'Dispatcher has arrived. Please confirm delivery.'); } } catch (e) {} });
+    socket.on('order:delivered', (payload) => { try { if (payload?.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showToast('Order delivered successfully. Thank you!', 'success'); showBrowserNotification('Delivered', 'Order delivered successfully. Thank you!'); showReviewModal(); } } catch (e) {} });
+    socket.on('order:notification', (payload) => { try { if (payload?.orderId && payload.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showBrowserNotification('Order Notification', payload.message || 'Order update'); } } catch (e) { console.error(e); } });
+    socket.on('order:ready', (payload) => { try { if (!orderId && payload?.orderId) { if (payload.orderId === orderId) { loadOrderDetails(); playNotificationSound(); showBrowserNotification('Order Ready', payload.message || 'Your order is ready for pickup'); } } } catch (e) { console.error(e); } });
     // Live rider location updates (Leaflet)
     let map, riderMarker, venueMarker;
     function ensureMap() {

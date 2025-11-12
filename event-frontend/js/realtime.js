@@ -54,6 +54,26 @@ socket.on("order:placed", (data) => {
   }
 });
 
+// Backwards-compatible aliases and additional namespaced events
+socket.on('order:accepted', (data) => {
+  if (data.consumerId === consumerId || data?.order?.consumerId === consumerId) {
+    showToast('Order Accepted', 'Vendor accepted your order', '/event-frontend/audio/preparing.mp3');
+    updateStatus('Preparing your meal...');
+  }
+});
+socket.on('order:in_transit', (data) => {
+  if (data.consumerId === consumerId || data?.order?.consumerId === consumerId) {
+    showToast('Out for Delivery', 'Dispatcher is on the way!', '/event-frontend/audio/dispatch.mp3');
+    updateStatus('Out for delivery');
+  }
+});
+socket.on('order:arrived_customer', (data) => {
+  if (data.consumerId === consumerId || data?.order?.consumerId === consumerId) {
+    showToast('Arrived', 'Dispatcher has arrived.', '/event-frontend/audio/arrived.mp3');
+    updateStatus('Arrived — Confirm delivery');
+  }
+});
+
 socket.on("order:accepted", (data) => {
   if (data.consumerId === consumerId) {
     showToast("ðŸ‘¨ðŸ½â€ðŸ³ Vendor Accepted", "Vendor started preparing your order.", "/event-frontend/audio/preparing.mp3");

@@ -163,46 +163,49 @@
 
     <!-- Live Wallet Updates -->
     <script>
-        const socket = io(); // Initialize Socket.IO
+        // Prefer the central socket instance (window.__qs_socket). Fallback to global io() if present.
+        const socket = window.__qs_socket || (typeof io !== 'undefined' ? io() : { on: ()=>{}, emit: ()=>{} });
 
         // Update wallet earnings in real-time
         socket.on('wallet:update', (wallet) => {
-            document.getElementById('rider-earnings').textContent = `₦${wallet.earnings.toFixed(2)}`;
+            try { document.getElementById('rider-earnings').textContent = `₦${(wallet?.earnings || 0).toFixed(2)}`; } catch(e){}
         });
 
         // Update delivered orders count
         socket.on('orders:delivered', (count) => {
-            document.getElementById('rider-delivered').textContent = count;
+            try { document.getElementById('rider-delivered').textContent = count; } catch(e){}
         });
 
         // Update active orders count
         socket.on('orders:active', (count) => {
-            document.getElementById('rider-active').textContent = count;
+            try { document.getElementById('rider-active').textContent = count; } catch(e){}
         });
     </script>
 
     <!-- Populate orders dynamically -->
     <script>
-        socket.on('orders:ready', (orders) => {
-            const orderTable = document.getElementById('orderTable');
-            orderTable.innerHTML = '';
-            orders.forEach(order => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.vendor}</td>
-                    <td>${order.seat}</td>
-                    <td>₦${order.amount}</td>
-                    <td>
-                        <button class="btn btn-success btn-sm">Accept</button>
-                        <button class="btn btn-warning btn-sm">In Transit</button>
-                        <button class="btn btn-primary btn-sm">Arrived</button>
-                        <button class="btn btn-info btn-sm">Scan QR</button>
-                    </td>
-                `;
-                orderTable.appendChild(row);
+        try {
+            socket.on('orders:ready', (orders) => {
+                const orderTable = document.getElementById('orderTable');
+                orderTable.innerHTML = '';
+                (orders || []).forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${order.vendor}</td>
+                        <td>${order.seat}</td>
+                        <td>₦${order.amount}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm">Accept</button>
+                            <button class="btn btn-warning btn-sm">In Transit</button>
+                            <button class="btn btn-primary btn-sm">Arrived</button>
+                            <button class="btn btn-info btn-sm">Scan QR</button>
+                        </td>
+                    `;
+                    orderTable.appendChild(row);
+                });
             });
-        });
+        } catch(e) { /* no-op if socket not available */ }
     </script>
 
         <!-- Live Map Tracking with Leaflet -->

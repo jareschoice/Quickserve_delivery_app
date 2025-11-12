@@ -1,6 +1,9 @@
 ﻿// Admin Product Management System
 import { API_BASE_URL, FILE_BASE_URL } from './config.js';
 import socket from './socket.js';
+// Token and user are needed across functions; set them on DOMContentLoaded
+let token = null;
+let user = {};
 
 let selectedVendor = null;
 let currentProducts = [];
@@ -8,9 +11,9 @@ let productModal, stockModal;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    // Check authentication (support both token keys)
+    token = localStorage.getItem('token') || localStorage.getItem('eventToken');
+    try { user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('eventUser') || '{}'); } catch(e){ user = {}; }
     
     if (!token || user.role !== 'admin') {
         alert('Admin access required!');
@@ -46,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadVendors() {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/vendors`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
 
@@ -133,7 +136,7 @@ async function loadProducts(vendorId) {
     container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/products?vendorId=${vendorId}`);
+    const response = await fetch(`${API_BASE_URL}/products?vendorId=${vendorId}`);
         const data = await response.json();
 
         if (response.ok && (data.items || []).length >= 0) {
@@ -326,7 +329,7 @@ async function saveProduct() {
         const response = await fetch(url, {
             method,
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             },
             body: formData
         });
@@ -365,7 +368,7 @@ window.deleteProduct = async function(productId) {
         const response = await fetch(`${API_BASE_URL}/admin/products/${productId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -390,7 +393,7 @@ window.toggleAvailability = async function(productId, available) {
         const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/availability`, {
             method: 'PATCH',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ available })
@@ -479,7 +482,7 @@ async function saveStockAdjustment() {
         const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/stock`, {
             method: 'PATCH',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 
@@ -520,6 +523,8 @@ function showError(message) {
 
 function logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('eventToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('eventUser');
     window.location.href = 'login.html';
 }

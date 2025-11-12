@@ -1,6 +1,5 @@
-﻿// Configuration
-const API_BASE_URL = 'http://127.0.0.1:5555/api/auth';
-import socket from './socket.js';
+﻿// Configuration - use auto-generated env-config for correct host/port
+import { AUTH_API_URL } from './env-config.js';
 
 // Handle login form submission
 document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -19,9 +18,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     console.log('ðŸ” Attempting login...');
     console.log('Email:', email);
     console.log('Role:', role);
-    console.log('API URL:', `${API_BASE_URL}/login`);
+  console.log('API URL:', `${AUTH_API_URL}/login`);
     
-    const response = await fetch(`${API_BASE_URL}/login`, {
+  const response = await fetch(`${AUTH_API_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

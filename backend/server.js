@@ -1,19 +1,16 @@
-﻿// ===============================
-// 🚀 QuickServe Backend Server.js (Full Safe Version)
-// ===============================
+﻿/// ==============================================
+// 🚀 QuickServe Backend - ESM Safe Auto-IP Version
+// ==============================================
 
-import express from "express";
-import http from "http";
-import cors from "cors";
-import helmet from "helmet";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import { Server } from "socket.io";
-import fs from "fs";
-import path, { dirname, resolve, join } from "path";
+// 🌍 Core Modules
 import { fileURLToPath } from "url";
-import vendorRoutes from "./routes/vendorRoutes.js";
-import { ensurePendingOrderIndex } from "./models/PendingOrder.js";
+import { dirname, join, resolve } from "path";
+import { networkInterfaces } from "os";
+import fs from "fs";
+
+// ✅ ESM-safe __dirname and __filename setup
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // ==============================================
 // 🔧 Environment Setup
@@ -190,6 +187,22 @@ const eventFrontendPath = resolve(__dirname, "../event-frontend");
 // ===== FIX: Proper MP3 streaming for audio files =====
 const audioDir = resolve("../event-frontend/audio");
 
+// Serve a dynamic env-config.js so frontend always gets the correct host/port
+app.get(['/js/env-config.js','/event-frontend/js/env-config.js'], (req, res) => {
+  try {
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.get('host'); // includes port
+    const BACKEND_HTTP_DYNAMIC = `${proto}://${host}`;
+    const WS_PROTO = proto === 'https' ? 'wss' : 'ws';
+    const SOCKET_URL_DYNAMIC = `${WS_PROTO}://${host}`;
+    const content = `// Dynamic env-config generated per-request\nexport const BACKEND_HTTP = '${BACKEND_HTTP_DYNAMIC}';\nexport const API_BASE_URL = BACKEND_HTTP + '/api';\nexport const AUTH_API_URL = API_BASE_URL + '/auth';\nexport const SOCKET_URL = '${SOCKET_URL_DYNAMIC}';\nexport default { BACKEND_HTTP, API_BASE_URL, AUTH_API_URL, SOCKET_URL };`;
+    res.setHeader('Content-Type','application/javascript');
+    return res.send(content);
+  } catch (err) {
+    return res.status(500).send('// Failed to generate env-config');
+  }
+});
+
 app.get("/event-frontend/audio/:file", async (req, res) => {
   const fs = (await import("fs")).default;
   const path = (await import("path")).default;
@@ -231,7 +244,9 @@ app.get("/event-frontend/audio/:file", async (req, res) => {
 
 app.use(express.static(publicPath));
 app.use("/event-frontend", express.static(eventFrontendPath));
-app.get("/", (req, res) => res.redirect("/event-frontend/home.html"));
+// Serve event frontend from root as well so pages like /login.html work
+app.use('/', express.static(eventFrontendPath));
+app.get("/", (req, res) => res.redirect("/home.html"));
 
 /// Fix MP3 range streaming issue
 app.get("/event-frontend/audio/:file", (req, res, next) => {

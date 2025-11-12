@@ -409,6 +409,52 @@ function setupRealtime() {
         refresh();
       } catch (e) { console.error(e); }
     });
+    // New namespaced events (backwards compatible handlers)
+    globalSocket.on('order:placed', (payload) => {
+      try {
+        console.log('order:placed (vendor)', payload);
+        refresh();
+        showToast('New order received', 'info');
+        playNotificationSound();
+        showBrowserNotification('New Order', 'You have a new order.');
+      } catch (e) { console.error(e); }
+    });
+
+    globalSocket.on('order:accepted', (payload) => {
+      try {
+        console.log('order:accepted (vendor)', payload);
+        refresh();
+        showToast(payload.message || 'Order accepted', 'success');
+        playNotificationSound();
+      } catch (e) { console.error(e); }
+    });
+
+    globalSocket.on('order:assigned', (payload) => {
+      try {
+        console.log('order:assigned (vendor)', payload);
+        refresh();
+        showToast(payload.message || 'Dispatcher assigned', 'info');
+        playNotificationSound();
+      } catch (e) { console.error(e); }
+    });
+
+    globalSocket.on('order:in_transit', (payload) => {
+      try {
+        console.log('order:in_transit (vendor)', payload);
+        refresh();
+        showToast(payload.message || 'Order out for delivery', 'info');
+        playNotificationSound();
+      } catch (e) { console.error(e); }
+    });
+
+    globalSocket.on('order:delivered', (payload) => {
+      try {
+        console.log('order:delivered (vendor)', payload);
+        refresh();
+        showToast(payload.message || 'Order delivered', 'success');
+        playNotificationSound();
+      } catch (e) { console.error(e); }
+    });
     
   } catch (e) {
     console.warn('Vendor socket setup failed:', e.message);

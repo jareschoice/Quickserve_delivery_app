@@ -33,10 +33,11 @@ async function loadVendorProducts() {
       list.innerHTML = '<div class="col-12"><div class="alert alert-danger">No vendor selected</div></div>';
       return;
     }
-    const response = await fetch(`${API_BASE_URL}/products?vendorId=${vendorId}`);
-    const data = await response.json();
-    const items = data.items || [];
-    displayProducts(items);
+  const response = await fetch(`${API_BASE_URL}/products?vendorId=${vendorId}`);
+  const data = await response.json();
+  // Support multiple response shapes: { items: [...] }, { products: [...] }, array, or wrapped object
+  const items = data.items || data.products || data || [];
+  displayProducts(Array.isArray(items) ? items : []);
   } catch (error) {
     console.error('Error loading products:', error);
     list.innerHTML = '<div class="col-12"><div class="alert alert-danger">Failed to load products</div></div>';

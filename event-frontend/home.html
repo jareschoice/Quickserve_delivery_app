@@ -87,6 +87,10 @@
                             <p class="stat-label">Avg. Delivery</p>
                         </div>
                     </div>
+                    <div class="mt-3">
+                        <button id="runTestFlowBtn" class="btn btn-sm btn-warning">Run test order flow</button>
+                        <small class="text-muted ms-2">(Simulate order → vendor accept → ready → dispatcher claim → confirm)</small>
+                    </div>
                 </div>
                 <div class="col-lg-6">
                     <!-- Promo Banners (auto-rotate) -->
@@ -277,6 +281,8 @@
 <script type="module" src="js/chat-widget.js"></script>
 <script type="module" src="js/home.js"></script>
 <script type="module" src="js/realtime.js"></script>
+<!-- Test harness (developer-only) -->
+<script type="module" src="js/test-order-flow.js"></script>
 
 <!-- ✅ Socket.IO Client -->
 <script src="/socket.io/socket.io.js"></script>

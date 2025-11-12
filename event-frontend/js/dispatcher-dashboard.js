@@ -1,16 +1,21 @@
 ﻿// AutofestXTradeExpo - Dispatcher Dashboard Script
 import socket from './socket.js';
 
-// Check authentication
-const token = localStorage.getItem('token');
-const userRole = localStorage.getItem('userRole');
+// Check authentication (accept both token/eventToken and user/eventUser formats)
+const token = localStorage.getItem('token') || localStorage.getItem('eventToken');
+let userRole = localStorage.getItem('userRole');
+if (!userRole) {
+    try {
+        const parsed = JSON.parse(localStorage.getItem('user') || localStorage.getItem('eventUser') || 'null');
+        userRole = parsed?.role;
+    } catch (e) {}
+}
 
 if (!token || userRole !== 'dispatcher') {
     window.location.href = 'login.html';
 }
 
-// Socket.IO Connection
-const socket = io(API_BASE_URL);
+// Use imported socket (socket is a safe proxy even if real socket not available)
 
 // Small notification helpers (inline to avoid converting this file to ESM)
 function playNotificationSound() {
@@ -473,6 +478,44 @@ socket.on('order:notification', (payload) => {
             // refresh active delivery if it matches
             loadActiveDelivery();
         }
+    } catch (e) { console.error(e); }
+});
+
+// New namespaced events (keeps compatibility with older event names)
+socket.on('order:dispatch_requested', (payload) => {
+    try {
+        console.log('order:dispatch_requested', payload);
+        showNotification('Pickup Requested', payload.message || 'Pickup requested by vendor');
+        playNotificationSound();
+        // optionally refresh available deliveries
+        loadAvailableDeliveries && loadAvailableDeliveries();
+    } catch (e) { console.error(e); }
+});
+
+socket.on('order:assigned', (payload) => {
+    try {
+        console.log('order:assigned', payload);
+        showAlert(payload.message || 'You have been assigned to a delivery', 'info');
+        playNotificationSound();
+        loadActiveDelivery();
+    } catch (e) { console.error(e); }
+});
+
+socket.on('order:in_transit', (payload) => {
+    try {
+        console.log('order:in_transit', payload);
+        showAlert(payload.message || 'Delivery is in transit', 'info');
+        playNotificationSound();
+        loadActiveDelivery();
+    } catch (e) { console.error(e); }
+});
+
+socket.on('order:delivered', (payload) => {
+    try {
+        console.log('order:delivered', payload);
+        showAlert(payload.message || 'Delivery confirmed', 'success');
+        playNotificationSound();
+        loadActiveDelivery();
     } catch (e) { console.error(e); }
 });
 

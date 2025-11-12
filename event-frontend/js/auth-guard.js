@@ -2,22 +2,28 @@
 // Usage: import { requireAuth } from './js/auth-guard.js'; requireAuth('vendor'|'dispatcher'|'admin');
 
 export function requireAuth(expectedRole) {
-  const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  // Support both legacy keys and new keys used across the frontend:
+  // - 'token' + 'user'
+  // - 'eventToken' + 'eventUser'
+  const token = localStorage.getItem('token') || localStorage.getItem('eventToken');
+  const userRaw = localStorage.getItem('user') || localStorage.getItem('eventUser') || '{}';
+  let user = {};
+  try { user = JSON.parse(userRaw || '{}'); } catch (err) { user = {}; }
 
   if (!token) {
-    showBanner('Login required. Redirecting to loginâ€¦');
+    showBanner('Login required. Redirecting to login…');
     setTimeout(() => { window.location.href = 'login.html'; }, 1200);
     return false;
   }
   if (expectedRole && user?.role && user.role !== expectedRole) {
-    showBanner(`Insufficient permissions for ${expectedRole}. Redirectingâ€¦`, true);
+    showBanner(`Insufficient permissions for ${expectedRole}. Redirecting…`, true);
     setTimeout(() => { window.location.href = 'login.html'; }, 1200);
     return false;
   }
 
-  // Identify user/role for sockets if available later
+  // Identify user/role for sockets or other modules
   window.__qs_authUser = user;
+  window.__qs_token = token;
   return true;
 }
 
