@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/colors.dart';
+import '../../services/socket_service.dart';
 import 'profile_screen.dart';
 import 'product_upload.dart';
 import 'wallet_screen.dart';
@@ -13,7 +15,9 @@ class VendorDashboard extends StatefulWidget {
 }
 
 class _VendorDashboardState extends State<VendorDashboard> {
+  final SocketService _socketService = SocketService();
   int _currentIndex = 0;
+  int _newOrderCount = 0;
 
   final List<Widget> _pages = const [
     VendorHomePage(),
@@ -21,6 +25,49 @@ class _VendorDashboardState extends State<VendorDashboard> {
     WalletScreen(),
     ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _setupSocket();
+  }
+
+  @override
+  void dispose() {
+    _socketService.off('order:new');
+    super.dispose();
+  }
+
+  void _setupSocket() async {
+    _socketService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final vendorId =
+        prefs.getString('vendorId') ?? prefs.getString('userId') ?? '';
+
+    if (vendorId.isNotEmpty) {
+      _socketService.joinRoom('vendor:$vendorId');
+      _socketService.joinRoom('role:vendor');
+    }
+
+    _socketService.on('order:new', (data) {
+      debugPrint('VendorDashboard: New order! Data: $data');
+      if (mounted) {
+        setState(() => _newOrderCount++);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('New order received!'),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'View',
+              textColor: Colors.white,
+              onPressed: () => setState(() => _currentIndex = 0),
+            ),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +82,54 @@ class _VendorDashboardState extends State<VendorDashboard> {
         onTap: (index) {
           setState(() {
             _currentIndex = index;
+            if (index == 0) _newOrderCount = 0; // Clear badge on home tap
           });
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Upload"),
+        items: [
           BottomNavigationBarItem(
+            icon: Stack(
+              children: [
+                const Icon(Icons.dashboard),
+                if (_newOrderCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '$_newOrderCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            label: "Home",
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.add_box),
+            label: "Upload",
+          ),
+          const BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
             label: "Wallet",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profile",
+          ),
         ],
       ),
     );
@@ -148,7 +233,7 @@ class VendorHomePage extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color, width: 2),
         ),

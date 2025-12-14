@@ -14,9 +14,11 @@ class RiderHome extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await AuthService().logout();
-              if (context.mounted) Navigator.of(context).pushReplacementNamed('/auth');
+              if (context.mounted) {
+                Navigator.of(context).pushReplacementNamed('/auth');
+              }
             },
-          )
+          ),
         ],
       ),
       body: const Center(child: Text('Welcome, Rider!')),

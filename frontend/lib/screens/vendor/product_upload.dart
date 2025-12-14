@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/api_client.dart';
+import '../../services/socket_service.dart';
 
 class ProductUploadScreen extends StatefulWidget {
   const ProductUploadScreen({super.key});
@@ -12,7 +15,10 @@ class ProductUploadScreen extends StatefulWidget {
 class _ProductUploadScreenState extends State<ProductUploadScreen> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
+  final SocketService _socketService = SocketService();
+
   XFile? _imageFile;
+  bool _uploading = false;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -20,6 +26,22 @@ class _ProductUploadScreenState extends State<ProductUploadScreen> {
   final TextEditingController quantityController = TextEditingController();
 
   String selectedSize = "Small";
+  String selectedCategory = "Food";
+
+  final List<String> categories = [
+    'Food',
+    'Drinks',
+    'Snacks',
+    'Groceries',
+    'Pharmacy',
+    'Other',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _socketService.connect();
+  }
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -28,12 +50,87 @@ class _ProductUploadScreenState extends State<ProductUploadScreen> {
     });
   }
 
-  void _submitProduct() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Product uploaded successfully")),
-      );
-      // TODO: Add backend API integration here later
+  Future<void> _submitProduct() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _uploading = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final vendorId = prefs.getString('vendorId') ?? prefs.getString('userId');
+
+      final productData = {
+        'name': nameController.text.trim(),
+        'description': descriptionController.text.trim(),
+        'price': int.tryParse(priceController.text) ?? 0,
+        'quantity': int.tryParse(quantityController.text) ?? 1,
+        'size': selectedSize,
+        'category': selectedCategory,
+        'vendorId': vendorId,
+        'available': true,
+      };
+
+      // Upload to backend
+      Map<String, dynamic> response;
+      if (_imageFile != null) {
+        final bytes = await _imageFile!.readAsBytes();
+        final fields = productData.map(
+          (key, value) => MapEntry(key, value.toString()),
+        );
+
+        response = await ApiClient().uploadBytes(
+          '/api/products',
+          bytes,
+          _imageFile!.name,
+          fieldName: 'image',
+          fields: fields,
+        );
+      } else {
+        response = await ApiClient().postJson('/api/products', productData);
+      }
+
+      if (response['product'] != null || response['_id'] != null) {
+        // Emit socket event to notify consumers
+        _socketService.emit('product:created', {
+          'product': response['product'] ?? response,
+          'vendorId': vendorId,
+        });
+
+        // Show success
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("✅ Product uploaded successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Clear form
+          nameController.clear();
+          descriptionController.clear();
+          priceController.clear();
+          quantityController.clear();
+          setState(() {
+            _imageFile = null;
+            selectedSize = "Small";
+          });
+        }
+      } else {
+        throw Exception(response['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("❌ Failed to upload: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _uploading = false);
+      }
     }
   }
 
@@ -122,6 +219,25 @@ class _ProductUploadScreenState extends State<ProductUploadScreen> {
               const SizedBox(height: 15),
 
               DropdownButtonFormField<String>(
+                initialValue: selectedCategory,
+                decoration: const InputDecoration(
+                  labelText: "Category",
+                  border: OutlineInputBorder(),
+                ),
+                items: categories
+                    .map(
+                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedCategory = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 15),
+
+              DropdownButtonFormField<String>(
                 initialValue: selectedSize,
                 decoration: const InputDecoration(
                   labelText: "Size",
@@ -140,19 +256,32 @@ class _ProductUploadScreenState extends State<ProductUploadScreen> {
               ),
 
               const SizedBox(height: 25),
-              ElevatedButton.icon(
-                onPressed: _submitProduct,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 40,
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _uploading ? null : _submitProduct,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                icon: const Icon(Icons.upload),
-                label: const Text(
-                  "Upload Product",
-                  style: TextStyle(fontSize: 18),
+                  icon: _uploading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.upload),
+                  label: Text(
+                    _uploading ? "Uploading..." : "Upload Product",
+                    style: const TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
             ],

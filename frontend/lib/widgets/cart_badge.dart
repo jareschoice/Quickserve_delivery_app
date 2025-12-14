@@ -18,10 +18,16 @@ class CartBadge extends StatelessWidget {
             top: 4,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(8)),
-              child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 11)),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$count',
+                style: const TextStyle(color: Colors.white, fontSize: 11),
+              ),
             ),
-          )
+          ),
       ],
     );
   }

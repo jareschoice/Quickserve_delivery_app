@@ -84,20 +84,30 @@ class _WalletScreenState extends State<WalletScreen> {
                     onPressed: canWithdraw
                         ? () async {
                             final err = await _withdraw(1000);
-                            if (err != null) {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(SnackBar(content: Text(err)));
-                            } else {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Withdrawal requested'),
-                                ),
-                              );
-                              setState(() {});
+                            if (!context.mounted) {
+                              return;
                             }
+
+                            final messenger = ScaffoldMessenger.of(context);
+
+                            if (err != null) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text(err)),
+                              );
+                              return;
+                            }
+
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('Withdrawal requested'),
+                              ),
+                            );
+
+                            if (!mounted) {
+                              return;
+                            }
+
+                            setState(() {});
                           }
                         : null,
                   ),

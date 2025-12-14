@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -50,8 +50,17 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         title: const Text('QuickServe'),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {},
+          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/support'),
+        backgroundColor: const Color(0xFFFF6B00),
+        tooltip: 'Chat Support',
+        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
       body: ListView(
         padding: const EdgeInsets.all(12),
@@ -114,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 5,
                   offset: const Offset(0, 3),
                 ),
@@ -125,8 +134,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Icon(a['icon'] as IconData, color: Colors.green, size: 30),
                 const SizedBox(height: 6),
-                Text(a['label'] as String,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(
+                  a['label'] as String,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -139,7 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         TextButton(onPressed: () {}, child: const Text('See all')),
       ],
     );
@@ -160,16 +177,19 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 3)),
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
               ],
             ),
             child: Column(
               children: [
                 Expanded(
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(10),
+                    ),
                     child: Image.network(
                       'https://source.unsplash.com/random/400x200?food,$index',
                       fit: BoxFit.cover,
@@ -179,8 +199,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8),
-                  child: Text(items[index],
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    items[index],
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             ),
@@ -207,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             title: Text(r),
-            subtitle: const Text('Open • 25–35 min • 4.5 ★'),
+            subtitle: const Text('Open â€¢ 25â€“35 min â€¢ 4.5 â˜…'),
             trailing: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
@@ -237,8 +259,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text('Special Meals Plan',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Special Meals Plan',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(height: 4),
                   Text('Subscribe to Basic, Standard, or Premium meal plans.'),
                 ],

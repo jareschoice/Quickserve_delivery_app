@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
       final apiClient = ApiClient();
       final me = await apiClient.me();
       if (!mounted) return;
-      
+
       final role = roleFromString(me['user']?['role']);
       Widget next;
       switch (role) {

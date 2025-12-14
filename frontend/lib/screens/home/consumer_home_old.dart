@@ -20,7 +20,7 @@ class _ConsumerHomeState extends State<ConsumerHome> {
     socket.on('order.created', (data) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ORDER PLACED — WAITING FOR VENDOR')),
+          const SnackBar(content: Text('ORDER PLACED â€” WAITING FOR VENDOR')),
         );
       }
     });
@@ -48,7 +48,7 @@ class _ConsumerHomeState extends State<ConsumerHome> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text('QuickServe - Explore'),
-          backgroundColor: Colors.green.withOpacity(0.9),
+          backgroundColor: Colors.green.withValues(alpha: 0.9),
           foregroundColor: Colors.white,
           actions: [
             IconButton(
@@ -57,72 +57,72 @@ class _ConsumerHomeState extends State<ConsumerHome> {
             ),
           ],
         ),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          // Search box
-          TextField(
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search),
-              hintText: 'Search for restaurants or dishes',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+        body: ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
+            // Search box
+            TextField(
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: 'Search for restaurants or dishes',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
+              onSubmitted: (v) {},
             ),
-            onSubmitted: (v) {},
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          // Featured carousel
-          SizedBox(
-            height: 140,
-            child: PageView(
-              children: List.generate(
-                3,
-                (i) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Featured ${i + 1}',
-                      style: const TextStyle(fontSize: 22),
+            // Featured carousel
+            SizedBox(
+              height: 140,
+              child: PageView(
+                children: List.generate(
+                  3,
+                  (i) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Featured ${i + 1}',
+                        style: const TextStyle(fontSize: 22),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          // Categories
-          SizedBox(
-            height: 90,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildCategory('Promo', Icons.local_offer),
-                _buildCategory('Pizza', Icons.local_pizza),
-                _buildCategory('Sushi', Icons.rice_bowl),
-                _buildCategory('Burgers', Icons.fastfood),
-                _buildCategory('Dessert', Icons.icecream),
-              ],
+            // Categories
+            SizedBox(
+              height: 90,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildCategory('Promo', Icons.local_offer),
+                  _buildCategory('Pizza', Icons.local_pizza),
+                  _buildCategory('Sushi', Icons.rice_bowl),
+                  _buildCategory('Burgers', Icons.fastfood),
+                  _buildCategory('Dessert', Icons.icecream),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          // Food court / restaurants
-          const Text(
-            'Popular near you',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          ...List.generate(5, (i) => _buildRestaurantTile(context, i)),
-        ],
+            // Food court / restaurants
+            const Text(
+              'Popular near you',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...List.generate(5, (i) => _buildRestaurantTile(context, i)),
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -135,7 +135,7 @@ class _ConsumerHomeState extends State<ConsumerHome> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 6),
         ],
       ),
       child: Column(
@@ -156,7 +156,7 @@ class _ConsumerHomeState extends State<ConsumerHome> {
       child: ListTile(
         leading: Container(width: 64, color: Colors.grey.shade300),
         title: Text(name),
-        subtitle: const Text('Open • 25-35 min • 4.5 ★'),
+        subtitle: const Text('Open â€¢ 25-35 min â€¢ 4.5 â˜…'),
         trailing: ElevatedButton(
           onPressed: () => Navigator.of(
             context,

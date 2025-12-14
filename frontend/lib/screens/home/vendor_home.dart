@@ -7,8 +7,6 @@ class VendorHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundWrapper(
-      child: const VendorDashboard(),
-    );
+    return BackgroundWrapper(child: const VendorDashboard());
   }
 }

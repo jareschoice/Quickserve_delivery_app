@@ -12,7 +12,10 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
   bool _loading = false;
   String? _message;
@@ -81,8 +84,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     setState(() => _loading = true);
 
     try {
-      final success = await AuthService().resendOTP(email: widget.email);
-      if (success) {
+      final result = await AuthService().resendOTP(email: widget.email);
+      if (result.success) {
         showSnack('New OTP sent to ${widget.email}');
         // Clear current OTP input
         for (var controller in _otpControllers) {
@@ -90,7 +93,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         }
         _otpFocusNodes[0].requestFocus();
       } else {
-        showSnack('Failed to resend OTP', error: true);
+        showSnack(result.displayMessage, error: true);
       }
     } catch (e) {
       showSnack('Error: ${e.toString()}', error: true);
@@ -149,12 +152,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 40),
-            
+
             // Icon and Title
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -163,9 +166,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 color: Colors.green[600],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             const Text(
               'Enter Verification Code',
               style: TextStyle(
@@ -174,9 +177,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 color: Colors.black87,
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Text(
               'We sent a verification code to\n${widget.email}\n\n(Demo: Enter any 6-digit code)',
               textAlign: TextAlign.center,
@@ -186,17 +189,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 height: 1.4,
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // OTP Input Fields
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(6, (index) => _buildOTPField(index)),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Verify Button
             SizedBox(
               width: double.infinity,
@@ -215,13 +218,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         'Verify Code',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Resend Section
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -242,13 +248,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ),
               ],
             ),
-            
+
             if (_message != null) ...[
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

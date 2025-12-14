@@ -47,7 +47,7 @@ class HeaderSection extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(
-                  color: AppColors.primaryGreen.withOpacity(.2),
+                  color: AppColors.primaryGreen.withValues(alpha: .2),
                 ),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [

@@ -100,7 +100,10 @@ class _BannerImage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.black.withOpacity(.2), Colors.transparent],
+                colors: [
+                  Colors.black.withValues(alpha: .2),
+                  Colors.transparent,
+                ],
                 begin: Alignment.bottomCenter,
                 end: Alignment.center,
               ),
@@ -127,7 +130,7 @@ class _SubscriptionBanner extends StatelessWidget {
         children: [
           const Expanded(
             child: Text(
-              "📅 Subscribe to daily meals\nBreakfast • Lunch • Dinner\nDelivered on your schedule.",
+              "ðŸ“… Subscribe to daily meals\nBreakfast â€¢ Lunch â€¢ Dinner\nDelivered on your schedule.",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -144,9 +147,7 @@ class _SubscriptionBanner extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Subscription page coming soon")),
-              );
+              Navigator.pushNamed(context, '/special-meals');
             },
             child: const Text("Subscribe"),
           ),

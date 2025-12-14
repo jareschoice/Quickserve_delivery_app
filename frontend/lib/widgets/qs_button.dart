@@ -5,7 +5,12 @@ class QSButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool loading;
 
-  const QSButton({super.key, required this.text, required this.onPressed, this.loading = false});
+  const QSButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.loading = false,
+  });
 
   @override
   Widget build(BuildContext context) {

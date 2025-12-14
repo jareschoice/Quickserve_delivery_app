@@ -36,8 +36,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _appLabel = _role == UserRole.vendor
           ? 'QuickVendor'
           : _role == UserRole.rider
-              ? 'QuickRide'
-              : 'QuickServe';
+          ? 'QuickRide'
+          : 'QuickServe';
     });
   }
 
@@ -61,24 +61,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _msg = null;
     });
     try {
-      final ok = await AuthService().register(
+      final result = await AuthService().register(
         fullName: _fullName.text.trim(),
         email: _email.text.trim(),
         password: _password.text,
         role: _role!,
       );
-      if (ok) {
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => VerifyEmailScreen(email: _email.text.trim()),
-          ),
-        );
-      } else {
-        throw Exception('Registration failed');
+      if (!mounted) return;
+
+      if (!result.success) {
+        setState(() {
+          _error = result.displayMessage;
+          _msg = null;
+        });
+        return;
       }
+
+      if (result.useOTP) {
+        final message = result.displayMessage;
+        setState(() {
+          final otpSuffix = (result.otp != null && result.otp!.isNotEmpty)
+              ? '\nOTP (dev): ${result.otp}'
+              : '';
+          _msg = '$message$otpSuffix';
+          _error = null;
+        });
+        return;
+      }
+
+      setState(() {
+        _error = null;
+        _msg = null;
+      });
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => VerifyEmailScreen(
+            email: _email.text.trim(),
+            verificationLink: result.verificationUrl,
+            emailSent: result.emailSent,
+            initialMessage: result.displayMessage,
+          ),
+        ),
+      );
     } catch (e) {
-      setState(() => _error = e.toString());
+      final message = e.toString().replaceFirst('Exception: ', '');
+      setState(() => _error = message);
     } finally {
       if (mounted) setState(() => _loading = false);
     }

@@ -15,7 +15,7 @@ class BackgroundWrapper extends StatelessWidget {
     this.opacity = 0.09, // default watermark opacity
   });
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(

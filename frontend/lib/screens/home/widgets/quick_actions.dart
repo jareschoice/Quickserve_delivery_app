@@ -74,7 +74,7 @@ class _QuickTile extends StatelessWidget {
           image: NetworkImage(item.bgImage),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(.25),
+            Colors.black.withValues(alpha: .25),
             BlendMode.darken,
           ),
         ),

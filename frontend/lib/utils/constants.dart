@@ -13,11 +13,17 @@ bool get useMock => kApiBase.trim().isEmpty;
 class AppConfig {
   static const appName = 'QuickServe';
   static const currency = '₦';
-  static const serviceCharge = 50;
+
+  // Service charge shown to consumer at checkout - ₦50 only
+  // Backend also collects ₦50 from vendor and ₦50 from rider for admin
+  static const serviceCharge = 50; // Consumer pays ₦50 service fee
+
+  // Delivery fee calculation
+  static const fareBase = 300; // FARE_BASE
+  static const farePerKm = 120; // FARE_PER_KM
 
   static bool? get useMockApi => null;
-
-  static get apiBaseUrl => null; // Default service charge
+  static Null get apiBaseUrl => null;
 }
 
 // 🔹 Color palette

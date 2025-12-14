@@ -9,22 +9,6 @@ class ShopsPage extends StatefulWidget {
 }
 
 class _ShopsPageState extends State<ShopsPage> {
-  final List<String> _categories = [
-    'All',
-    'Supermarkets',
-    'Mini Marts',
-    'Delis',
-    'Kiosks',
-  ];
-  final int _selectedCategoryIndex = 0;
-
-  final List<Map<String, dynamic>> _subCategories = [
-    {'name': 'Bakery', 'icon': '🥖', 'color': Color(0xFFFF9800)},
-    {'name': 'Cleaning', 'icon': '🧽', 'color': Color(0xFF2196F3)},
-    {'name': 'Fruits', 'icon': '🥬', 'color': Color(0xFF4CAF50)},
-    {'name': 'Frozen Food', 'icon': '🧊', 'color': Color(0xFF00BCD4)},
-  ];
-
   final List<Map<String, dynamic>> _shops = [
     {
       'name': 'Naija Liquors - Ikeja',

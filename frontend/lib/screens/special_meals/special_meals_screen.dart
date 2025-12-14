@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class SpecialMealsScreen extends StatefulWidget {
   const SpecialMealsScreen({super.key});
@@ -40,11 +40,11 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
         content: Text(
           'You selected the $_selectedPlan plan.\n\n'
           'Meal Times:\n'
-          '${_breakfast ? "• Breakfast\n" : ""}'
-          '${_lunch ? "• Lunch\n" : ""}'
-          '${_dinner ? "• Dinner\n" : ""}\n'
-          'Service Charge: ₦$_serviceCharge\n'
-          'Total: ₦$_totalAmount',
+          '${_breakfast ? "â€¢ Breakfast\n" : ""}'
+          '${_lunch ? "â€¢ Lunch\n" : ""}'
+          '${_dinner ? "â€¢ Dinner\n" : ""}\n'
+          'Service Charge: â‚¦$_serviceCharge\n'
+          'Total: â‚¦$_totalAmount',
         ),
         actions: [
           TextButton(
@@ -56,7 +56,8 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                    content: Text('✅ Subscription confirmed successfully!')),
+                  content: Text('✅ Subscription confirmed successfully!'),
+                ),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
@@ -83,7 +84,7 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -100,16 +101,20 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style:
-                          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(desc, style: const TextStyle(color: Colors.black54)),
                 ],
               ),
             ),
             Text(
-              '₦$price',
+              'â‚¦$price',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
           ],
@@ -127,16 +132,19 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 5,
-              offset: const Offset(0, 2)),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Select Delivery Time',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            'Select Delivery Time',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           CheckboxListTile(
             value: _breakfast,
             title: const Text('Breakfast (8:00 AM)'),
@@ -173,10 +181,7 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
           const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Service Charge'),
-              Text('₦$_serviceCharge'),
-            ],
+            children: [const Text('Service Charge'), Text('₦$_serviceCharge')],
           ),
           const SizedBox(height: 4),
           Row(
@@ -184,9 +189,7 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
             children: [
               const Text('Plan Total'),
               Text(
-                _selectedPlan == null
-                    ? '₦0'
-                    : '₦${_planPrices[_selectedPlan]}',
+                _selectedPlan == null ? '₦0' : '₦${_planPrices[_selectedPlan]}',
               ),
             ],
           ),
@@ -194,10 +197,17 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('₦$_totalAmount',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.green)),
+              const Text(
+                'Total',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'â‚¦$_totalAmount',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
             ],
           ),
         ],
@@ -219,9 +229,9 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 12),
-            _buildPlanCard('Basic', 'Affordable plan (₦25,000)', 25000),
-            _buildPlanCard('Standard', 'Balanced plan (₦50,000)', 50000),
-            _buildPlanCard('Premium', 'Exclusive plan (₦75,000)', 75000),
+            _buildPlanCard('Basic', 'Affordable plan (â‚¦25,000)', 25000),
+            _buildPlanCard('Standard', 'Balanced plan (â‚¦50,000)', 50000),
+            _buildPlanCard('Premium', 'Exclusive plan (â‚¦75,000)', 75000),
             const SizedBox(height: 16),
             _buildScheduleSelector(),
             _buildSummaryCard(),
@@ -237,8 +247,10 @@ class _SpecialMealsScreenState extends State<SpecialMealsScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Confirm Subscription',
-                    style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: const Text(
+                  'Confirm Subscription',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             ),
           ],

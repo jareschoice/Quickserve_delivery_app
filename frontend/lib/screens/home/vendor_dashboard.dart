@@ -13,10 +13,14 @@ class VendorDashboard extends StatelessWidget {
           IconButton(
             onPressed: () async {
               await AuthService().logout();
-              if (context.mounted) Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+              if (context.mounted) {
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/login', (r) => false);
+              }
             },
             icon: const Icon(Icons.logout),
-          )
+          ),
         ],
       ),
       body: const Center(child: Text('Welcome, vendor!')),

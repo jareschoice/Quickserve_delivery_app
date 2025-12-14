@@ -7,22 +7,22 @@ class FeaturedCarousel extends StatelessWidget {
     {
       "name": "Spicy Jollof",
       "image": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-      "price": "₦2500",
+      "price": "â‚¦2500",
     },
     {
       "name": "Grilled Chicken",
       "image": "https://images.unsplash.com/photo-1606755962773-0e49f55a3e7a",
-      "price": "₦4500",
+      "price": "â‚¦4500",
     },
     {
       "name": "Veggie Burger",
       "image": "https://images.unsplash.com/photo-1550547660-d9450f859349",
-      "price": "₦3000",
+      "price": "â‚¦3000",
     },
     {
       "name": "Fruit Smoothie",
       "image": "https://images.unsplash.com/photo-1542444459-db63f49ef4e7",
-      "price": "₦1500",
+      "price": "â‚¦1500",
     },
   ];
 
@@ -54,7 +54,7 @@ class _FeaturedCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 4),
           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'checkout_page.dart';
 
 class OrderPage extends StatefulWidget {
@@ -11,7 +11,6 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
-  final int _quantity = 1;
   final List<Map<String, dynamic>> _menuItems = [
     {
       'name': 'Jollof Rice with Chicken',
@@ -151,7 +150,7 @@ class _OrderPageState extends State<OrderPage> {
 
                     // Price
                     Text(
-                      '₦${item['price']}',
+                      'â‚¦${item['price']}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -233,7 +232,7 @@ class _OrderPageState extends State<OrderPage> {
                           ),
                         ),
                         child: Text(
-                          'Add to Cart - ₦${(item['price'] ?? 0) * dialogQuantity}',
+                          'Add to Cart - â‚¦${(item['price'] ?? 0) * dialogQuantity}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -286,7 +285,7 @@ class _OrderPageState extends State<OrderPage> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -422,7 +421,7 @@ class _OrderPageState extends State<OrderPage> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -484,7 +483,7 @@ class _OrderPageState extends State<OrderPage> {
                                       Row(
                                         children: [
                                           Text(
-                                            '₦${item['price']}',
+                                            'â‚¦${item['price']}',
                                             style: const TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -498,8 +497,8 @@ class _OrderPageState extends State<OrderPage> {
                                               vertical: 4,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.green.withOpacity(
-                                                0.1,
+                                              color: Colors.green.withValues(
+                                                alpha: 0.1,
                                               ),
                                               borderRadius:
                                                   BorderRadius.circular(8),
@@ -663,7 +662,7 @@ class _OrderPageState extends State<OrderPage> {
                                         ),
                                       ),
                                       Text(
-                                        '₦${cartItem['price']} x ${cartItem['quantity']}',
+                                        'â‚¦${cartItem['price']} x ${cartItem['quantity']}',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey[600],
@@ -673,7 +672,7 @@ class _OrderPageState extends State<OrderPage> {
                                   ),
                                 ),
                                 Text(
-                                  '₦${cartItem['price'] * cartItem['quantity']}',
+                                  'â‚¦${cartItem['price'] * cartItem['quantity']}',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -716,7 +715,7 @@ class _OrderPageState extends State<OrderPage> {
                             ),
                           ),
                           Text(
-                            '₦${_cartItems.fold<int>(0, (sum, item) => sum + (item['price'] * item['quantity'] as int))}',
+                            'â‚¦${_cartItems.fold<int>(0, (sum, item) => sum + (item['price'] * item['quantity'] as int))}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

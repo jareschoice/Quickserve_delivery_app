@@ -25,42 +25,42 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
         'Maryland',
         'Ajah',
       ],
-      'icon': '🏙️',
+      'icon': 'ðŸ™ï¸',
       'popular': true,
     },
     {
       'name': 'Abuja',
       'areas': ['Garki', 'Wuse', 'Maitama', 'Asokoro', 'Gwarinpa'],
-      'icon': '🏛️',
+      'icon': 'ðŸ›ï¸',
       'popular': true,
     },
     {
       'name': 'Port Harcourt',
       'areas': ['GRA', 'Trans Amadi', 'Old Port Harcourt', 'Diobu'],
-      'icon': '🌊',
+      'icon': 'ðŸŒŠ',
       'popular': false,
     },
     {
       'name': 'Kano',
       'areas': ['Fagge', 'Nassarawa', 'Gwale', 'Dala'],
-      'icon': '🏜️',
+      'icon': 'ðŸœï¸',
       'popular': false,
     },
     {
       'name': 'Ibadan',
       'areas': ['UI', 'Bodija', 'Ring Road', 'Challenge'],
-      'icon': '🌳',
+      'icon': 'ðŸŒ³',
       'popular': false,
     },
   ];
 
   final List<Map<String, dynamic>> _filters = [
-    {'name': 'Free Delivery', 'icon': '🚚', 'active': false},
-    {'name': 'Fast Food', 'icon': '🍔', 'active': false},
-    {'name': 'Nigerian Food', 'icon': '🍲', 'active': true},
-    {'name': 'Pizza', 'icon': '🍕', 'active': false},
-    {'name': 'Chinese', 'icon': '🥡', 'active': false},
-    {'name': 'Healthy', 'icon': '🥗', 'active': false},
+    {'name': 'Free Delivery', 'icon': 'ðŸšš', 'active': false},
+    {'name': 'Fast Food', 'icon': 'ðŸ”', 'active': false},
+    {'name': 'Nigerian Food', 'icon': 'ðŸ²', 'active': true},
+    {'name': 'Pizza', 'icon': 'ðŸ•', 'active': false},
+    {'name': 'Chinese', 'icon': 'ðŸ¥¡', 'active': false},
+    {'name': 'Healthy', 'icon': 'ðŸ¥—', 'active': false},
   ];
 
   final List<Map<String, dynamic>> _promos = [
@@ -68,19 +68,19 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
       'title': '50% Off First Order',
       'subtitle': 'Valid for new users only',
       'color': Colors.red,
-      'icon': '🎉',
+      'icon': 'ðŸŽ‰',
     },
     {
       'title': 'Free Delivery Weekend',
       'subtitle': 'No minimum order required',
       'color': Colors.green,
-      'icon': '🚚',
+      'icon': 'ðŸšš',
     },
     {
       'title': 'Buy 2 Get 1 Free',
       'subtitle': 'On selected restaurants',
       'color': Colors.orange,
-      'icon': '🍔',
+      'icon': 'ðŸ”',
     },
   ];
 
@@ -143,7 +143,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -188,7 +188,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('📍 Location detected: Lagos, Nigeria'),
+                      content: Text('ðŸ“ Location detected: Lagos, Nigeria'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -199,10 +199,12 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.green.withValues(alpha: 0.3),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -213,7 +215,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -293,12 +295,12 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                         border: Border.all(
                           color: isSelected
                               ? Colors.green
-                              : Colors.grey.withOpacity(0.2),
+                              : Colors.grey.withValues(alpha: 0.2),
                           width: isSelected ? 2 : 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -310,8 +312,8 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.green.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.1),
+                                  ? Colors.green.withValues(alpha: 0.1)
+                                  : Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -426,7 +428,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                           border: Border.all(
                             color: filter['active']
                                 ? Colors.green
-                                : Colors.grey.withOpacity(0.3),
+                                : Colors.grey.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -480,10 +482,12 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: promo['color'].withOpacity(0.3)),
+                    border: Border.all(
+                      color: promo['color'].withValues(alpha: 0.3),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -494,7 +498,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: promo['color'].withOpacity(0.1),
+                          color: promo['color'].withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(

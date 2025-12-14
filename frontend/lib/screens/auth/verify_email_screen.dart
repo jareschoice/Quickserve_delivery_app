@@ -4,7 +4,17 @@ import 'login_screen.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   final String email;
-  const VerifyEmailScreen({super.key, required this.email});
+  final String? verificationLink;
+  final bool emailSent;
+  final String? initialMessage;
+
+  const VerifyEmailScreen({
+    super.key,
+    required this.email,
+    this.verificationLink,
+    this.emailSent = true,
+    this.initialMessage,
+  });
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -13,6 +23,17 @@ class VerifyEmailScreen extends StatefulWidget {
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   bool _loading = false;
   String? _message;
+  bool _emailSent = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _message =
+        widget.initialMessage ??
+        'A verification link was sent to ${widget.email}. Please check your inbox.';
+    // verificationLink stored in widget if needed for debugging
+    _emailSent = widget.emailSent;
+  }
 
   void showSnack(String message, {bool error = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -28,19 +49,29 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     setState(() => _loading = true);
 
     try {
-      final success = await AuthService().resendOTP(email: widget.email);
-      if (success) {
-        showSnack('Verification email sent to ${widget.email}');
-        setState(() => _message = '✅ Verification email sent successfully!');
+      final result = await AuthService().resendOTP(email: widget.email);
+      final message = result.displayMessage;
+
+      if (result.success) {
+        showSnack(message);
       } else {
-        showSnack('Failed to resend verification email', error: true);
+        showSnack(message, error: true);
       }
+
+      setState(() {
+        final sanitized = message.replaceFirst(RegExp(r'^✅\\s*'), '');
+        _message = result.success ? '✅ $sanitized' : message;
+        _emailSent = result.emailSent;
+        // verificationLink available in result if needed for debugging
+      });
     } catch (e) {
       showSnack('Error: ${e.toString()}', error: true);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  // Note: _openVerificationLink and _copyVerificationLink methods removed - not needed after dev link removal
 
   void _goToLogin() {
     Navigator.of(
@@ -58,7 +89,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,7 +100,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -114,6 +145,49 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ),
             ),
 
+            if (_message != null) ...[
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Text(
+                  _message!,
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+
+            if (!_emailSent) ...[
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orangeAccent),
+                ),
+                child: const Text(
+                  'We could not confirm that the email was delivered. Please check your spam folder or try resending.',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+
+            // Dev link display removed as per user request
             const SizedBox(height: 40),
 
             // Resend Button
@@ -160,21 +234,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ),
             ),
 
-            if (_message != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _message!,
-                  style: const TextStyle(color: Colors.green),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+            const SizedBox(height: 12),
           ],
         ),
       ),

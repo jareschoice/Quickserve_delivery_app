@@ -1,12 +1,77 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/user.dart';
 import 'api_client.dart';
+
+class RegisterResult {
+  final bool success;
+  final String? message;
+  final bool emailSent;
+  final bool useOTP;
+  final String? verificationUrl;
+  final String? otp;
+  final String? error;
+
+  const RegisterResult({
+    required this.success,
+    required this.emailSent,
+    required this.useOTP,
+    this.message,
+    this.verificationUrl,
+    this.otp,
+    this.error,
+  });
+
+  bool get hasError => error != null && error!.isNotEmpty;
+  bool get hasVerificationLink =>
+      verificationUrl != null && verificationUrl!.isNotEmpty;
+  String get displayMessage => (error != null && error!.isNotEmpty)
+      ? error!
+      : (message ??
+            (success
+                ? 'Registration completed.'
+                : 'Registration failed. Please try again.'));
+}
+
+class VerificationActionResult {
+  final bool success;
+  final String? message;
+  final bool emailSent;
+  final String? verificationUrl;
+  final String? error;
+
+  const VerificationActionResult({
+    required this.success,
+    required this.emailSent,
+    this.message,
+    this.verificationUrl,
+    this.error,
+  });
+
+  bool get hasError => error != null && error!.isNotEmpty;
+  bool get hasVerificationLink =>
+      verificationUrl != null && verificationUrl!.isNotEmpty;
+  String get displayMessage => (error != null && error!.isNotEmpty)
+      ? error!
+      : (message ??
+            (success
+                ? 'Action completed successfully.'
+                : 'Action failed. Please try again.'));
+}
 
 class AuthService {
   final _api = ApiClient();
 
+  /// Check if user is currently logged in
+  static Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    return token != null && token.isNotEmpty;
+  }
+
   /// Register a new user
-  Future<bool> register({
+  Future<RegisterResult> register({
     required String fullName,
     required String email,
     required String password,
@@ -18,21 +83,54 @@ class AuthService {
       final roleStr = role == UserRole.consumer
           ? 'customer'
           : role == UserRole.vendor
-              ? 'vendor'
-              : role == UserRole.rider
-                  ? 'rider'
-                  : 'customer'; // fallback
+          ? 'vendor'
+          : role == UserRole.rider
+          ? 'rider'
+          : 'customer'; // fallback
 
       final data = await _api.postJson('/auth/register/$roleStr', {
         'name': fullName,
         'email': email,
         'password': password,
-      });
+      }, timeout: const Duration(seconds: 60));
 
-      return data['ok'] == true || data['message'] != null;
+      final errorMessage = data['error']?.toString();
+      if (errorMessage != null && errorMessage.isNotEmpty) {
+        return RegisterResult(
+          success: false,
+          message: errorMessage,
+          error: errorMessage,
+          emailSent: data['emailSent'] == true,
+          useOTP: data['useOTP'] == true,
+          verificationUrl: data['verificationUrl']?.toString(),
+          otp: data['otp']?.toString(),
+        );
+      }
+
+      final message = data['message']?.toString();
+      final emailSent = data['emailSent'] == true;
+      final needsOtp = data['useOTP'] == true;
+
+      return RegisterResult(
+        success: true,
+        message:
+            message ??
+            'Account created successfully. Please verify your email.',
+        emailSent: emailSent,
+        useOTP: needsOtp,
+        verificationUrl: data['verificationUrl']?.toString(),
+        otp: data['otp']?.toString(),
+      );
     } catch (e) {
-      print('⚠️ Registration failed: $e');
-      return false;
+      debugPrint('Registration failed: $e');
+      final message = e.toString().replaceFirst('Exception: ', '');
+      return RegisterResult(
+        success: false,
+        message: message,
+        error: message,
+        emailSent: false,
+        useOTP: false,
+      );
     }
   }
 
@@ -42,24 +140,51 @@ class AuthService {
       // For now, use dev-verify as fallback until OTP endpoint is deployed
       final data = await _api.postJson('/auth/dev-verify', {'email': email});
 
+      final errorMessage = data['error']?.toString();
+      if (errorMessage != null && errorMessage.isNotEmpty) {
+        throw Exception(errorMessage);
+      }
+
       return data['message'] != null;
     } catch (e) {
-      print('⚠️ OTP verification failed: $e');
+      debugPrint('OTP verification failed: $e');
       return false;
     }
   }
 
   /// Resend OTP (fallback to resend verification)
-  Future<bool> resendOTP({required String email}) async {
+  Future<VerificationActionResult> resendOTP({required String email}) async {
     try {
       final data = await _api.postJson('/auth/resend-verification', {
         'email': email,
       });
+      final errorMessage = data['error']?.toString();
+      if (errorMessage != null && errorMessage.isNotEmpty) {
+        return VerificationActionResult(
+          success: false,
+          message: errorMessage,
+          error: errorMessage,
+          emailSent: data['emailSent'] == true,
+          verificationUrl: data['verificationUrl']?.toString(),
+        );
+      }
 
-      return data['message'] != null;
+      return VerificationActionResult(
+        success: true,
+        message: data['message']?.toString() ?? 'Verification email sent.',
+        emailSent: data['emailSent'] == true,
+        verificationUrl: data['verificationUrl']?.toString(),
+      );
     } catch (e) {
-      print('⚠️ Resend OTP failed: $e');
-      return false;
+      debugPrint('Resend OTP failed: $e');
+      final message = e.toString().replaceFirst('Exception: ', '');
+      return VerificationActionResult(
+        success: false,
+        message: message,
+        error: message,
+        emailSent: false,
+        verificationUrl: null,
+      );
     }
   }
 
@@ -71,12 +196,13 @@ class AuthService {
     String password,
   ) async {
     final parsedRole = roleFromString(role) ?? UserRole.consumer;
-    return await register(
+    final result = await register(
       fullName: name,
       email: email,
       password: password,
       role: parsedRole,
     );
+    return result.success;
   }
 
   /// Login and save user info locally
@@ -86,6 +212,11 @@ class AuthService {
         'email': email,
         'password': password,
       });
+
+      final errorMessage = data['error']?.toString();
+      if (errorMessage != null && errorMessage.isNotEmpty) {
+        throw Exception(errorMessage);
+      }
 
       final token = data['token'];
       final user = data['user'];
@@ -100,15 +231,15 @@ class AuthService {
         if (email.isNotEmpty) await prefs.setString('email', email);
         if (fullName.isNotEmpty) await prefs.setString('fullName', fullName);
 
-        print('✅ Login success: $email as $role');
+        debugPrint('Login success: $email as $role');
         return true;
       } else {
-        print('⚠️ Invalid response from API: $data');
-        return false;
+        debugPrint('Invalid response from API: $data');
+        throw Exception('Invalid response from server.');
       }
     } catch (e) {
-      print('❌ Login failed: $e');
-      return false;
+      debugPrint('Login failed: $e');
+      rethrow;
     }
   }
 
@@ -118,9 +249,9 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       await _api.clearAuth();
-      print('🔒 Logged out successfully.');
+      debugPrint('Logged out successfully.');
     } catch (e) {
-      print('⚠️ Logout error: $e');
+      debugPrint('Logout error: $e');
     }
   }
 

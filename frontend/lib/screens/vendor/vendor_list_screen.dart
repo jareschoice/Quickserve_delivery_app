@@ -39,6 +39,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
             image: v['image'],
             eta: v['eta'] ?? '25-35 min',
             rating: (v['rating'] as num).toDouble(),
+            availabilityStatus: v['availabilityStatus'] as String?,
+            operatingHours: v['operatingHours'] as Map<String, dynamic>?,
             onTap: () => _openVendor(v),
           );
         },

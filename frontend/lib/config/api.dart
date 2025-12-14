@@ -1,4 +1,9 @@
+import 'config.dart';
+
 class ApiConfig {
-  // ✅ QuickServe Local Backend (for testing)
-  static const String baseUrl = 'http://192.168.33.104:5555';
+  // Single source of truth for backend base URL.
+  // Override at build/run via:
+  //   flutter run --flavor consumer --dart-define BACKEND_BASE_URL=http://<PC_IP>:5555
+  //   flutter build apk --flavor consumer --dart-define BACKEND_BASE_URL=http://<PC_IP>:5555
+  static String get baseUrl => AppConfig.backendBaseUrl;
 }

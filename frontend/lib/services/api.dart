@@ -26,7 +26,10 @@ class ApiClient {
   }
 
   Future<http.Response> post(String path, Map body, {bool auth = false}) async {
-    return await http.post(_u(path),
-        headers: await _headers(auth: auth), body: jsonEncode(body));
+    return await http.post(
+      _u(path),
+      headers: await _headers(auth: auth),
+      body: jsonEncode(body),
+    );
   }
 }

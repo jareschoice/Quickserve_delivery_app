@@ -44,17 +44,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final pages = [
     {
       'title': '🍔 Welcome to QuickServe',
-      'subtitle': 'Your premium food delivery service is here!\nFast, reliable, and delicious meals delivered to your doorstep.',
+      'subtitle':
+          'Your premium food delivery service is here!\nFast, reliable, and delicious meals delivered to your doorstep.',
       'emoji': '🍽️',
     },
     {
       'title': '⭐ Special Meals Daily',
-      'subtitle': 'Discover our chef\'s special meals and exclusive offers every day.\nAuthentic flavors from top restaurants.',
+      'subtitle':
+          'Discover our chef\'s special meals and exclusive offers every day.\nAuthentic flavors from top restaurants.',
       'emoji': '🍲',
     },
     {
       'title': '🚀 Get Started Now',
-      'subtitle': 'Join thousands of satisfied customers.\nOrder now and taste the difference!',
+      'subtitle':
+          'Join thousands of satisfied customers.\nOrder now and taste the difference!',
       'emoji': '💯',
     },
   ];
